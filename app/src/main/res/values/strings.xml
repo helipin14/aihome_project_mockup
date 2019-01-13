@@ -1,0 +1,16 @@
+<resources>
+    <string name="app_name">AI Home</string>
+    <string name="temperature">20°</string>
+    <string name="humidity">90%</string>
+    <string name="date">12 Desember 2018</string>
+    <string name="location">Jakarta</string>
+    <string name="item1">Home</string>
+    <string name="item2">Devices</string>
+    <string name="item3">Rooms</string>
+    <string name="item4">Voice</string>
+    <string name="item5">Accounts</string>
+    <string name="device_hint">Enter new device name</string>
+    <string name="username">Username</string>
+    <string name="password">Password</string>
+    <string name="change">CHANGE</string>
+</resources>

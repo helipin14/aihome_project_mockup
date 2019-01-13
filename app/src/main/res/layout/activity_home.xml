@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:background="#f7f7f7"
+    android:scrollbars="vertical"
+    android:fillViewport="true"
+    android:layout_height="wrap_content">
+    <include layout="@layout/home"></include>
+</ScrollView>

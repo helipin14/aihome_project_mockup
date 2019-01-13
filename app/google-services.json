@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "241914021912",
+    "firebase_url": "https://aihome-dc73d.firebaseio.com",
+    "project_id": "aihome-dc73d",
+    "storage_bucket": "aihome-dc73d.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:241914021912:android:f61917299248664e",
+        "android_client_info": {
+          "package_name": "com.itcs.aihome.mockup"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "241914021912-9s0lkev9ouqa9gphigqf8roq08i1n5us.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.itcs.aihome.mockup",
+            "certificate_hash": "b9595aee93ade25a18f5cc38f9f8ba839b9ec1b7"
+          }
+        },
+        {
+          "client_id": "241914021912-ni1rkepktu2nkjfa4a1tqkvd0nt90amo.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD8kwXKqh2FXluzBZBN8GpxkBs6upocPNE"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 2,
+          "other_platform_oauth_client": [
+            {
+              "client_id": "241914021912-ni1rkepktu2nkjfa4a1tqkvd0nt90amo.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
