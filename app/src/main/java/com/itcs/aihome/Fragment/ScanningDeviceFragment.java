@@ -78,6 +78,7 @@ public class ScanningDeviceFragment extends Fragment {
             adapter = new WiFiAdapter(getContext(), networks);
             wifiList.setLayoutManager(new LinearLayoutManager(getContext()));
             wifiList.setAdapter(adapter);
+            Log.e(TAG, "setupWiFiList: " + networks.toString());
         }
     }
 
@@ -87,4 +88,9 @@ public class ScanningDeviceFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onPause() {
+        super.onPause();
+        unregisterForContextMenu();
+    }
 }

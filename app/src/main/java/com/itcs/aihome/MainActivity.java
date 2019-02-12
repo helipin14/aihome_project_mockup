@@ -98,6 +98,7 @@ public class MainActivity extends AppCompatActivity {
         StringRequest stringRequest = new StringRequest(Request.Method.POST, config.server_php + "login.php", new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
+                Log.e(TAG, "onResponse: " + response);
                 try {
                     JSONObject jsonObject = new JSONObject(response);
                     String status = jsonObject.getString("status");
