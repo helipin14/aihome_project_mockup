@@ -4,31 +4,32 @@ import android.media.Image;
 
 import java.io.Serializable;
 
-public class Model implements Serializable {
+public class Model {
     private int image;
-    private String status;
+    private int status;
     private String devices;
-    private String baseUrl;
     private String tag;
     private String iddevice;
-    private String blynkurl, pin;
+    private int flag = 0;
+    private String idaccess;
+    private String idcontroller;
 
-    public Model(int image, String status, String devices, String baseUrl, String tag, String iddevice, String blynkurl, String pin) {
+    public Model(int image, int status, String devices, String tag, String iddevice, int flag, String idaccess, String idcontroller) {
         this.image = image;
         this.status = status;
         this.devices = devices;
-        this.baseUrl = baseUrl;
         this.tag = tag;
         this.iddevice = iddevice;
-        this.blynkurl = blynkurl;
-        this.pin = pin;
+        this.flag = flag;
+        this.idaccess = idaccess;
+        this.idcontroller = idcontroller;
     }
 
     public int getImage() {
         return image;
     }
 
-    public String getStatus() {
+    public int getStatus() {
         return status;
     }
 
@@ -42,7 +43,7 @@ public class Model implements Serializable {
         this.image = image;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(int status) {
         this.status = status;
     }
 
@@ -50,19 +51,29 @@ public class Model implements Serializable {
         this.devices = devices;
     }
 
-    public String getBaseUrl() {
-        return baseUrl;
-    }
-
-    public String getBlynkurl() { return blynkurl; }
-
     public String getIddevice() { return iddevice; }
 
-    public String getPin() {
-        return pin;
+    public int getFlag() {
+        return flag;
     }
 
-    public void setPin(String pin) {
-        this.pin = pin;
+    public void setFlag(int flag) {
+        this.flag = flag;
+    }
+
+    public String getIdaccess() {
+        return idaccess;
+    }
+
+    public void setIdaccess(String idaccess) {
+        this.idaccess = idaccess;
+    }
+
+    public String getIdcontroller() {
+        return idcontroller;
+    }
+
+    public void setIdcontroller(String idcontroller) {
+        this.idcontroller = idcontroller;
     }
 }

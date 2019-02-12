@@ -21,7 +21,9 @@ import android.support.annotation.NonNull;
 import android.support.design.widget.BottomNavigationView;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
@@ -48,7 +50,7 @@ import okhttp3.Request;
 import okhttp3.WebSocket;
 
 
-public class Homepage extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+public class Homepage extends AppCompatActivity implements LocationListener{
 
     public static final String TAG = Homepage.class.getSimpleName();
     private static Homepage mInstance;
@@ -59,8 +61,9 @@ public class Homepage extends AppCompatActivity implements GoogleApiClient.Conne
     private Location location;
     private final static int PLAY_SERVICES_REQUEST = 1000;
     private OkHttpClient client;
-    private GoogleApiClient googleApiClient;
-    private FusedLocationProviderClient fusedLocationProviderClient;
+    private LocationManager locationManager;
+    private LocationListener listener;
+    private String cityname = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,26 +73,11 @@ public class Homepage extends AppCompatActivity implements GoogleApiClient.Conne
         bottomNavigationView = findViewById(R.id.bottom_navigation);
         client = new OkHttpClient();
         bottomNavigationView.setOnNavigationItemSelectedListener(navListener);
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
         checkConnection();
         loadFragment(HomeFragment.newInstance());
         startService(new Intent(Homepage.this, CheckConnection.class));
         startService(new Intent(Homepage.this, RunAfterBootService.class));
         getLocation();
-    }
-
-    @Override
-    protected void onStart() {
-        super.onStart();
-        googleApiClient.connect();
-    }
-
-    @Override
-    protected void onStop() {
-        if (googleApiClient.isConnected()) {
-            googleApiClient.disconnect();
-        }
-        super.onStop();
     }
 
     public static synchronized Homepage getInstance() {
@@ -165,67 +153,73 @@ public class Homepage extends AppCompatActivity implements GoogleApiClient.Conne
         snackbar.show();
     }
 
-    private void getLocation() {
-        googleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API)
-                .build();
-    }
-
-    @Override
-    public void onConnected(@Nullable Bundle bundle) {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if (location != null) {
-                        latitude = location.getLatitude();
-                        longtitude = location.getLongitude();
-                        Log.e(TAG, "latitude : " + latitude + " longitude : " + longtitude);
-                    }
-                }
-            });
-        } else {
-            requestPermission();
-        }
-    }
-
-    @Override
-    public void onConnectionSuspended(int i) {
-        Log.e(TAG, "Connection suspended");
-    }
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.e(TAG, "Connection failed");
-    }
-
     private void requestPermission() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this, new String[] {Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         }
     }
 
-    private boolean checkPlayServices() {
-        GoogleApiAvailability apiAvailability = GoogleApiAvailability.getInstance();
-        int resultCode = apiAvailability.isGooglePlayServicesAvailable(this);
-        if(resultCode != ConnectionResult.SUCCESS) {
-            if(apiAvailability.isUserResolvableError(resultCode)) {
-                apiAvailability.getErrorDialog(this, resultCode, PLAY_SERVICES_REQUEST);
-            } else {
-                Toast.makeText(getApplicationContext(), "Not supported", Toast.LENGTH_LONG).show();
-            }
-            return false;
+    private boolean isPermitted() {
+        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return true;
         }
-        return true;
+        return false;
+    }
+
+    private void getLocation(){
+        if(isPermitted()) {
+           requestPermission();
+        } else {
+            locationManager = (LocationManager) getSystemService(Context.LOCATION_SERVICE);
+            if(ContextCompat.checkSelfPermission(getApplicationContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1000 ,1000, this);
+            }
+        }
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        if(!checkPlayServices()) {
-            Toast.makeText(getApplicationContext(), "You need to install google play services", Toast.LENGTH_LONG).show();
-        }
+    public void onLocationChanged(Location location) {
+        latitude = location.getLatitude();
+        longtitude = location.getLongitude();
+        Log.e(TAG, "Latitude : " + String.valueOf(location.getLatitude()));
+        Log.e(TAG, "Longitude : " + String.valueOf(location.getLongitude()));
+        setDefaults("city", getCityName(latitude, longtitude), getApplicationContext());
     }
+
+    @Override
+    public void onProviderDisabled(String s) {
+
+    }
+
+    @Override
+    public void onProviderEnabled(String s) {
+
+    }
+
+    @Override
+    public void onStatusChanged(String s, int i, Bundle bundle) {
+        Log.e(TAG, "Status changed : " + s);
+    }
+
+    private String getCityName(Double latitude, Double longtitude) {
+        Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
+        try {
+            List<Address> addresses = geocoder.getFromLocation(latitude, longtitude, 1);
+            if(addresses.size() > 0) {
+                return addresses.get(0).getLocality();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static void setDefaults(String key, String value, Context context) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString(key, value);
+        editor.commit();
+    }
+
 }

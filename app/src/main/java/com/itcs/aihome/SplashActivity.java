@@ -3,6 +3,7 @@ package com.itcs.aihome;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,8 +36,9 @@ import java.util.Map;
 
 public class SplashActivity extends AppCompatActivity {
 
-    private String temps, hum, TAG, username, iduser;
+    private String temps, hum, TAG, username, iduser, email, tanggal_lahir, status_user;
     private JSONObject jsonObject;
+    private LocationManager locationManager;
 
     public interface VolleyCallback {
         void onSuccess(String result);
@@ -53,6 +55,7 @@ public class SplashActivity extends AppCompatActivity {
         getDataUser();
         getData();
         Log.e(TAG, "Response dari yang aku tambahkan disini : " + getDefaults("data", getApplicationContext()));
+        setDefaults("host1_themecolor", config.THEME_COLOR, getApplicationContext());
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -121,45 +124,15 @@ public class SplashActivity extends AppCompatActivity {
     }
 
     private void getAllData() {
-        String url = "http://dataaihome.itcs.co.id/getAll_Things.php";
+        String url = config.server_php + "initialize.php";
         RequestQueue requestQueue = Volley.newRequestQueue(this);
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
-                try {
-                    final JSONObject jsonObject = new JSONObject(response);
-                    JSONObject user = jsonObject.getJSONObject("user");
-                    username = user.getString("name");
-                    Log.e(TAG, "Response from url : " + response);
-                    final JSONArray jsonArray = jsonObject.getJSONArray("controller");
-                    for(int i = 0; i < jsonArray.length(); i++) {
-                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                        String blynk_key = jsonObject1.getString("blynk_key");
-                        if(jsonObject1.isNull("device")) {
-                        } else {
-                            JSONArray devices = jsonObject1.getJSONArray("device");
-                            for(int x = 0; x < devices.length(); x++) {
-                                final JSONObject jsonObject2 = devices.getJSONObject(x);
-                                String pin = jsonObject2.getString("pin");
-                                String baseUrl = "http://188.166.206.43:8080/" + blynk_key + "/get/" + pin;
-                                getStatus(baseUrl, new VolleyCallback() {
-                                    String status = "";
-                                    @Override
-                                    public void onSuccess(String result) {
-                                        status = result;
-                                        try {
-                                            jsonObject2.put("status", status);
-                                            setDefaults("data", jsonObject.toString(), getApplicationContext());
-                                        } catch(JSONException e) {
-                                            e.printStackTrace();
-                                        }
-                                    }
-                                });
-                            }
-                        }
-                    }
-                } catch (JSONException e) {
-                    e.printStackTrace();
+                if(!response.isEmpty()) {
+                    setDefaults("data", response, getApplicationContext());
+                    Log.e(TAG, "Response from url get all data : " + response);
+                    setDataUser();
                 }
             }
         }, new Response.ErrorListener() {
@@ -184,34 +157,6 @@ public class SplashActivity extends AppCompatActivity {
         requestQueue.add(stringRequest);
     }
 
-    private void getStatus(String url, final VolleyCallback volleyCallback) {
-        RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Log.e(TAG, "Home page Volley Callback Response from url : " + response);
-                String status = "";
-                try {
-                    JSONArray jsonArray1 = new JSONArray(response);
-                    if(jsonArray1.getString(0).equals("0")) {
-                        status = "off";
-                    } else {
-                        status = "on";
-                    }
-                    volleyCallback.onSuccess(status);
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                Log.e(TAG, "There was an error : " + error.getMessage());
-            }
-        });
-        queue.add(stringRequest);
-    }
-
     public static void setDefaults(String key, String value, Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
         SharedPreferences.Editor editor = preferences.edit();
@@ -224,35 +169,30 @@ public class SplashActivity extends AppCompatActivity {
         return preferences.getString(key, null);
     }
 
-    private void UpdateStatus(final String status, final String iddevice) {
-        String url = "http://dataaihome.itcs.co.id/setDevice_Stage.php";
-        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                Log.e(TAG, "Response from url : " + response);
+    private void setDataUser() {
+        if(getDefaults("data", getApplicationContext()) != null && getDefaults("data_user", getApplicationContext()) != null) {
+            String data = getDefaults("data", getApplicationContext());
+            try {
+                JSONObject data_user = new JSONObject(getDefaults("data_user", getApplicationContext()));
+                JSONObject jsonObject = new JSONObject(data);
+                JSONObject user = jsonObject.getJSONObject("user");
+                username = user.getString("name");
+                email = user.getString("email");
+                tanggal_lahir = user.getString("tanggal_lahir");
+                JSONArray house = jsonObject.getJSONArray("house");
+                for (int i = 0; i < house.length(); i++) {
+                    JSONObject jsonObject1 = house.getJSONObject(i);
+                    status_user = jsonObject1.getString("status");
+                }
+                data_user.put("name",  username);
+                data_user.put("email", email);
+                data_user.put("tanggal_lahir", tanggal_lahir);
+                data_user.put("status", status_user);
+                setDefaults("data_user", data_user.toString(), getApplicationContext());
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.e(TAG, "setDataUser: " + e.getMessage());
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("iddevice", iddevice);
-                params.put("status", status);
-                return params;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/x-www-form-urlencoded");
-                return params;
-            }
-        };
-        requestQueue.add(stringRequest);
+        }
     }
 }

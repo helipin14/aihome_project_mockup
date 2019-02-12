@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:padding="15dp"
+    android:background="@drawable/border_bottom_grey"
+    android:layout_height="wrap_content">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/item_name"
+        android:fontFamily="@font/hind_regular"
+        android:textSize="17sp"
+        android:text="Device 1"
+        android:layout_centerVertical="true"
+        android:textColor="@color/colorBlack"
+        />
+    <com.itcs.aihome.SolidIconTextView
+        android:layout_width="25dp"
+        android:layout_height="25dp"
+        android:layout_alignParentRight="true"
+        android:layout_centerVertical="true"
+        android:id="@+id/remove_item"
+        android:text="@string/minus_circle"
+        android:textSize="20sp"
+        />
+</RelativeLayout>

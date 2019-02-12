@@ -12,6 +12,7 @@
         <android.support.v7.widget.Toolbar
             android:layout_width="match_parent"
             android:background="@color/colorPrimary"
+            android:id="@+id/account_toolbar"
             android:layout_height="wrap_content">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -19,7 +20,7 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:text="ACCOUNT"
+                    android:text="SETTINGS"
                     android:textSize="20sp"
                     android:textAlignment="center"
                     android:fontFamily="@font/valeraround"
@@ -33,43 +34,10 @@
             android:layout_height="wrap_content">
             <LinearLayout
                 android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:paddingTop="30dp"
-                android:paddingLeft="20dp"
-                android:paddingRight="20dp"
-                android:layout_height="match_parent">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:orientation="vertical"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:layout_height="wrap_content">
-                    <ImageView
-                        android:layout_width="100dp"
-                        android:layout_height="100dp"
-                        android:background="@drawable/user_circle"
-                        android:backgroundTint="@color/colorGrey"
-                        android:layout_marginBottom="20dp"
-                        />
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/username_account"
-                        android:text="Helipin"
-                        android:textColor="@color/colorGrey"
-                        android:textAlignment="center"
-                        android:textSize="20sp"
-                        />
-                </LinearLayout>
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:paddingTop="20dp"
                 android:layout_height="wrap_content">
                 <ListView
                     android:layout_width="match_parent"
                     android:id="@+id/list_account"
-                    android:paddingVertical="8dp"
                     android:paddingHorizontal="8dp"
                     android:layout_height="wrap_content">
                 </ListView>

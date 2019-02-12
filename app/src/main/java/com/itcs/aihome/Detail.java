@@ -19,6 +19,8 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import android.view.TextureView;
 import android.view.View;
 import android.widget.Button;
@@ -95,6 +97,7 @@ public class Detail extends AppCompatActivity {
     private Switch time_control;
     private LinearLayout container1, container2, container3, container_configuration;
     private WeekdaysPicker weekdaysPicker;
+    private AlertDialog alertDialog;
 
     int flag = 0;
     private String TAG = Detail.class.getSimpleName();
@@ -150,6 +153,7 @@ public class Detail extends AppCompatActivity {
         ToggleButton();
         HandleData();
         checkData();
+        showDialog();
     }
     
     private void checkData() {
@@ -432,7 +436,7 @@ public class Detail extends AppCompatActivity {
 
     private void kirimWaktu(final String hari, final String start_time, final String end_time) {
         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
-        String url = "http://dataaihome.itcs.co.id/setTimer.php";
+        String url = config.server_temp + "setTimer.php";
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
             public void onResponse(String response) {
@@ -483,7 +487,7 @@ public class Detail extends AppCompatActivity {
     }
 
     private void updateTimer(final String hari, final String time_start, final String time_end, final String idtimer) {
-        String url = "http://dataaihome.itcs.co.id/updateTimer.php";
+        String url = config.server_temp + "updateTimer.php";
         RequestQueue queue = Volley.newRequestQueue(getApplicationContext());
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -830,7 +834,7 @@ public class Detail extends AppCompatActivity {
     }
 
     private void addToFavorite() {
-        String url = "http://dataaihome.itcs.co.id/saveFavorite.php";
+        String url = config.server_temp + "saveFavorite.php";
         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -884,7 +888,7 @@ public class Detail extends AppCompatActivity {
     }
 
     private void deleteFavorite() {
-        String url = "http://dataaihome.itcs.co.id/deleteFavorite.php";
+        String url = config.server_temp + "deleteFavorite.php";
         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -1104,7 +1108,7 @@ public class Detail extends AppCompatActivity {
     }
 
     private void deleteTimer(final String idtimer) {
-        String url = "http://dataaihome.itcs.co.id/deleteTimer.php";
+        String url = config.server_temp + "deleteTimer.php";
         RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
         StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
             @Override
@@ -1143,5 +1147,121 @@ public class Detail extends AppCompatActivity {
             }
         };
         requestQueue.add(stringRequest);
+    }
+
+    private void showDialog() {
+        devices.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                EditDialog();
+            }
+        });
+    }
+
+    private void EditDialog() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        LayoutInflater inflater = LayoutInflater.from(getApplicationContext());
+        View view = inflater.inflate(R.layout.dialog, null);
+        builder.setView(view);
+        final EditText editText = view.findViewById(R.id.new_device_name);
+        builder.setCancelable(false);
+        builder.setTitle("Change Device Name");
+        builder.setPositiveButton("DONE", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                if(!editText.getText().toString().trim().isEmpty()) {
+                    changeDeviceName(id_device, editText.getText().toString().trim());
+                    devices.setText(editText.getText().toString());
+                    setDefaults("update_data", "yes", getApplicationContext());
+                }
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+                dialogInterface.dismiss();
+            }
+        });
+        alertDialog = builder.create();
+        alertDialog.show();
+    }
+
+    private void changeDeviceName(final String iddevice, final String device_name) {
+        String url = config.server_temp + "updateDevice_Name.php";
+        RequestQueue requestQueue = Volley.newRequestQueue(getApplicationContext());
+        StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() {
+            @Override
+            public void onResponse(String response) {
+                Log.e(TAG, "Response from url (Change Device Name) : " + response + "iddevice : " + iddevice);
+                try {
+                    String data = getDefaults("data", getApplicationContext());
+                    if(!TextUtils.isEmpty(data)) {
+                        JSONObject jsonObject = new JSONObject(data);
+                        JSONArray jsonArray = jsonObject.getJSONArray("controller");
+                        for(int i = 0; i < jsonArray.length(); i++) {
+                            JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                            if(!jsonObject1.isNull("device")) {
+                                JSONArray devices = jsonObject1.getJSONArray("device");
+                                for(int x = 0; x < devices.length(); x++) {
+                                    JSONObject jsonObject2 = devices.getJSONObject(x);
+                                    if(jsonObject2.getString("iddevice").equals(iddevice)) {
+                                        jsonObject2.put("device_name", device_name);
+                                        changeDeviceNameOnFavorite(iddevice, device_name);
+                                    }
+                                    Log.e(TAG, "Perubahan setelah ubah nama : " + jsonObject.toString());
+                                    setDefaults("data", jsonObject.toString(), getApplicationContext());
+                                }
+                            }
+                        }
+                    }
+                } catch(JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+
+            }
+        }) {
+            @Override
+            protected Map<String, String> getParams() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("iddevice", iddevice);
+                params.put("name", device_name);
+                return params;
+            }
+
+            @Override
+            public Map<String, String> getHeaders() throws AuthFailureError {
+                Map<String, String> params = new HashMap<String, String>();
+                params.put("Content-Type", "application/x-www-form-urlencoded");
+                return params;
+            }
+        };
+        requestQueue.add(stringRequest);
+    }
+
+    private void changeDeviceNameOnFavorite(String iddevice, String device_name) {
+        String data = getDefaults("data", getApplicationContext());
+        if(!TextUtils.isEmpty(data)) {
+            try {
+                JSONObject jsonObject = new JSONObject(data);
+                if(!jsonObject.isNull("favorite")) {
+                    JSONArray favorite = jsonObject.getJSONArray("favorite");
+                    for (int i = 0; i < favorite.length(); i++) {
+                        JSONObject jsonObject1 = favorite.getJSONObject(i);
+                        String id_device = jsonObject1.getString("iddevice");
+                        if(id_device.equals(iddevice)) {
+                            jsonObject1.put("device_name", device_name);
+                        }
+                    }
+                }
+                Log.e(TAG, "Response dari change device name favorite : " + jsonObject.toString());
+                setDefaults("data", jsonObject.toString(), getApplicationContext());
+            } catch(JSONException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }

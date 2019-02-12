@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:fillViewport="true"
-    android:scrollbars="vertical"
+    android:scrollbars="none"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     android:layout_height="wrap_content">
@@ -11,6 +11,7 @@
         android:layout_width="match_parent"
         android:orientation="vertical"
         android:id="@+id/parent_home"
+        android:paddingBottom="20dp"
         android:layout_height="match_parent">
         <RelativeLayout
             android:layout_width="match_parent"
@@ -19,8 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="120dp"
                 android:gravity="top"
-                android:background="?attr/colorPrimary"
-                android:backgroundTint="@color/colorPrimary"
+                android:background="@color/colorPrimary"
                 android:id="@+id/my_toolbar">
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -33,11 +33,13 @@
                             android:layout_width="wrap_content"
                             android:layout_centerVertical="true"
                             android:layout_height="wrap_content">
-                            <ImageButton
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
+                            <com.itcs.aihome.SolidIconTextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
                                 android:id="@+id/logoutbutton"
-                                android:background="@drawable/logout"
+                                android:text="@string/power_off"
+                                android:textSize="18sp"
+                                android:textColor="@android:color/white"
                                 />
                         </LinearLayout>
                         <TextView
@@ -178,7 +180,7 @@
                             android:paddingTop="5dp"
                             android:fontFamily="@font/valeraround"
                             android:textColor="@color/colorGrey"
-                            android:id="@+id/time"
+                            android:id="@+id/location"
                             android:text="@string/location"
                             />
                     </LinearLayout>
@@ -196,21 +198,60 @@
                 android:layout_width="match_parent"
                 android:orientation="vertical"
                 android:paddingTop="15dp"
+                android:paddingRight="10dp"
                 android:layout_height="match_parent">
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Favorite Lights"
-                    android:textSize="17sp"
-                    android:textColor="#414141"
-                    android:fontFamily="@font/valeraround"
-                    android:padding="10dp"
-                    />
+                    android:orientation="horizontal"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Favorite Lights"
+                        android:textSize="16sp"
+                        android:textColor="#414141"
+                        android:layout_weight="0.5"
+                        android:layout_gravity="center"
+                        android:fontFamily="@font/valeraround"
+                        android:padding="10dp"
+                        />
+                    <info.hoang8f.android.segmented.SegmentedGroup
+                        android:layout_width="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="right"
+                        android:id="@+id/layout_onofflight"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:sc_border_width="1dp"
+                        android:layout_weight="0.5"
+                        app:sc_corner_radius="5dp"
+                        app:sc_tint_color="@color/colorPrimary"
+                        app:sc_checked_text_color="@android:color/white">
+                        <RadioButton
+                            android:layout_width="60dp"
+                            android:layout_height="30dp"
+                            android:minHeight="10dp"
+                            android:text="ON"
+                            android:fontFamily="@font/valeraround"
+                            android:id="@+id/on_favlight"
+                            style="@style/RadioButton"
+                            />
+                        <RadioButton
+                            android:layout_width="60dp"
+                            android:layout_height="30dp"
+                            android:text="OFF"
+                            android:id="@+id/off_favlight"
+                            android:minHeight="10dp"
+                            android:fontFamily="@font/valeraround"
+                            style="@style/RadioButton"
+                            />
+                    </info.hoang8f.android.segmented.SegmentedGroup>
+                </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:id="@+id/container_lights"
                     android:paddingLeft="10dp"
-                    android:paddingTop="10dp"
+                    android:paddingTop="15dp"
                     android:paddingRight="10dp"
                     android:orientation="vertical"
                     android:layout_height="match_parent">
@@ -255,21 +296,61 @@
                 android:layout_width="match_parent"
                 android:orientation="vertical"
                 android:paddingTop="15dp"
-                android:paddingBottom="30dp"
+                android:paddingRight="10dp"
+                android:paddingBottom="15dp"
                 android:layout_height="match_parent">
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Favorite Air Conditioner"
-                    android:textSize="17sp"
-                    android:fontFamily="@font/valeraround"
-                    android:textColor="#414141"
-                    android:padding="10dp"
-                    />
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Favorite AC"
+                        android:textSize="16sp"
+                        android:layout_weight="0.5"
+                        android:fontFamily="@font/valeraround"
+                        android:textColor="#414141"
+                        android:padding="10dp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
+                        android:layout_gravity="center"
+                        />
+                    <info.hoang8f.android.segmented.SegmentedGroup
+                        android:layout_width="match_parent"
+                        android:layout_gravity="center"
+                        android:gravity="right"
+                        android:id="@+id/layout_onoffac"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        app:sc_border_width="1dp"
+                        android:layout_weight="0.5"
+                        app:sc_corner_radius="5dp"
+                        app:sc_tint_color="@color/colorPrimary"
+                        app:sc_checked_text_color="@android:color/white">
+                        <RadioButton
+                            android:layout_width="60dp"
+                            android:layout_height="30dp"
+                            android:minHeight="10dp"
+                            android:text="ON"
+                            android:fontFamily="@font/valeraround"
+                            android:id="@+id/on_favac"
+                            style="@style/RadioButton"
+                            />
+                        <RadioButton
+                            android:layout_width="60dp"
+                            android:layout_height="30dp"
+                            android:text="OFF"
+                            android:id="@+id/off_favac"
+                            android:minHeight="10dp"
+                            android:fontFamily="@font/valeraround"
+                            style="@style/RadioButton"
+                            />
+                    </info.hoang8f.android.segmented.SegmentedGroup>
+                </LinearLayout>
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:id="@+id/container_ac"
-                    android:paddingTop="10dp"
+                    android:paddingTop="20dp"
                     android:paddingLeft="10dp"
                     android:paddingRight="10dp"
                     android:orientation="vertical"
@@ -284,7 +365,7 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:background="@android:color/white"
-                        android:paddingTop="15dp"
+                        android:paddingTop="20dp"
                         android:paddingLeft="20dp"
                         android:paddingRight="20dp"
                         android:paddingBottom="15dp"
@@ -310,6 +391,191 @@
                 </LinearLayout>
             </LinearLayout>
             <!-- end content 2-->
+            <!-- root view -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:id="@+id/root_view"
+                android:orientation="vertical"
+                android:layout_height="wrap_content">
+                <!-- content 3 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:id="@+id/container_group_root"
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:visibility="visible"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Recently Added Group"
+                        android:textColor="#414141"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/valeraround"
+                        />
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:paddingTop="10dp"
+                        android:orientation="vertical"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:id="@+id/data_group_container"
+                            android:orientation="vertical"
+                            android:visibility="gone"
+                            android:paddingTop="10dp"
+                            android:layout_height="wrap_content">
+                            <android.support.v7.widget.RecyclerView
+                                android:layout_width="match_parent"
+                                android:id="@+id/group_home_list"
+                                android:layout_height="wrap_content">
+                            </android.support.v7.widget.RecyclerView>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="view all group"
+                                android:paddingLeft="10dp"
+                                android:textSize="13sp"
+                                android:paddingTop="10dp"
+                                android:fontFamily="@font/valeraround"
+                                android:id="@+id/view_all_group"
+                                android:textColor="@color/colorBlue"
+                                />
+                        </LinearLayout>
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:orientation="vertical"
+                            android:id="@+id/nodata_group"
+                            android:layout_height="wrap_content">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:background="@android:color/white"
+                                android:paddingTop="15dp"
+                                android:paddingLeft="20dp"
+                                android:paddingRight="20dp"
+                                android:paddingBottom="15dp"
+                                android:orientation="horizontal"
+                                android:layout_height="wrap_content">
+                                <ImageView
+                                    android:layout_width="25dp"
+                                    android:layout_height="25dp"
+                                    android:src="@drawable/exclamation_triangle"
+                                    />
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:text="There is no group added"
+                                    android:textSize="18sp"
+                                    android:fontFamily="@font/valeraround"
+                                    android:paddingLeft="10dp"
+                                    android:layout_gravity="center"
+                                    />
+                            </LinearLayout>
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="add a group"
+                                android:paddingLeft="5dp"
+                                android:paddingTop="10dp"
+                                android:textSize="13sp"
+                                android:id="@+id/add_group_nodata"
+                                android:fontFamily="@font/valeraround"
+                                android:textColor="@color/colorBlue"
+                                />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+                <!-- end content3 -->
+                <!-- content 4 -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:orientation="vertical"
+                    android:padding="10dp"
+                    android:layout_height="wrap_content">
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Recently Added User"
+                        android:textColor="#414141"
+                        android:textSize="16sp"
+                        android:fontFamily="@font/valeraround"
+                        />
+                    <!-- no data -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:id="@+id/nodata_user"
+                        android:visibility="visible"
+                        android:orientation="vertical"
+                        android:layout_height="wrap_content">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:background="@android:color/white"
+                            android:layout_marginTop="10dp"
+                            android:paddingTop="15dp"
+                            android:paddingLeft="20dp"
+                            android:paddingRight="20dp"
+                            android:paddingBottom="15dp"
+                            android:orientation="horizontal"
+                            android:layout_height="wrap_content">
+                            <ImageView
+                                android:layout_width="25dp"
+                                android:layout_height="25dp"
+                                android:src="@drawable/exclamation_triangle"
+                                />
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="There is no user added"
+                                android:textSize="18sp"
+                                android:fontFamily="@font/valeraround"
+                                android:paddingLeft="10dp"
+                                android:layout_gravity="center"
+                                />
+                        </LinearLayout>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="add a user"
+                            android:paddingLeft="5dp"
+                            android:textSize="13sp"
+                            android:paddingTop="10dp"
+                            android:id="@+id/add_user_nodata"
+                            android:fontFamily="@font/valeraround"
+                            android:textColor="@color/colorBlue"
+                            />
+                    </LinearLayout>
+                    <!-- end no data -->
+                    <!-- data -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:visibility="gone"
+                        android:orientation="vertical"
+                        android:id="@+id/container_viewpageruser"
+                        android:layout_height="wrap_content">
+                        <com.itcs.aihome.WrapContentViewPager
+                            android:layout_width="match_parent"
+                            android:id="@+id/user_viewpager"
+                            android:overScrollMode="never"
+                            android:clipToPadding="false"
+                            android:layout_height="match_parent">
+                        </com.itcs.aihome.WrapContentViewPager>
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="view all user"
+                            android:textSize="13sp"
+                            android:paddingLeft="5dp"
+                            android:paddingTop="10dp"
+                            android:id="@+id/view_all_user"
+                            android:fontFamily="@font/valeraround"
+                            android:textColor="@color/colorBlue"
+                            />
+                    </LinearLayout>
+                    <!--end data -->
+                </LinearLayout>
+                <!-- end content 4 -->
+            </LinearLayout>
+            <!-- end root view -->
         </LinearLayout>
     </LinearLayout>
 </android.support.v4.widget.NestedScrollView>

@@ -13,6 +13,7 @@
             android:layout_height="match_parent"
             android:padding="10dp"
             android:text="CCTV"
+            android:fontFamily="@font/valeraround"
             android:textSize="25sp"
             android:textAlignment="center"
             android:textColor="@android:color/white"
@@ -24,71 +25,10 @@
         android:paddingRight="10dp"
         android:paddingTop="20dp"
         android:layout_height="wrap_content">
-        <LinearLayout
+        <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:paddingBottom="20dp"
+            android:id="@+id/cctv_list"
             android:layout_height="wrap_content">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:paddingLeft="20dp"
-                android:layout_height="wrap_content">
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="CCTV 1"
-                    android:layout_weight="0.5"
-                    android:textSize="20sp"
-                    />
-                <Switch
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="0.5"
-                    android:paddingRight="10dp"
-                    android:id="@+id/playcontroller"
-                    />
-            </LinearLayout>
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:paddingTop="20dp"
-                android:paddingLeft="15dp"
-                android:orientation="vertical"
-                android:paddingRight="15dp"
-                android:paddingBottom="15dp"
-                android:layout_height="wrap_content">
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <VideoView
-                        android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:id="@+id/videoview"
-                        android:visibility="gone"
-                        />
-                    <ProgressBar
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/progress_video"
-                        android:visibility="gone"
-                        android:layout_centerInParent="true"
-                        android:indeterminateTint="@android:color/white"
-                        />
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:src="@drawable/thumbnail"
-                        android:id="@+id/image_thumbnail"
-                        android:layout_centerInParent="true"
-                        android:scaleType="centerCrop"
-                        />
-                </RelativeLayout>
-                <FrameLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:id="@+id/video_container"
-                    >
-                </FrameLayout>
-            </LinearLayout>
-        </LinearLayout>
+        </android.support.v7.widget.RecyclerView>
     </LinearLayout>
 </LinearLayout>

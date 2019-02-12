@@ -8,12 +8,13 @@
     android:foreground="?android:attr/selectableItemBackground"
     android:padding="15dp"
     android:layout_height="wrap_content">
-    <ImageView
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:backgroundTint="@color/colorGrey"
-        android:background="@drawable/user2"
+    <com.itcs.aihome.SolidIconTextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/user"
         android:id="@+id/image_account"
+        android:textSize="16sp"
+        android:textColor="@color/colorGrey"
         />
     <TextView
         android:layout_width="match_parent"
@@ -23,6 +24,6 @@
         android:id="@+id/text_account"
         android:textSize="16sp"
         android:textColor="@color/colorGrey"
-        android:fontFamily="@font/valeraround"
+        android:fontFamily="@font/hind_regular"
         />
 </LinearLayout>

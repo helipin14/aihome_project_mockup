@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity"
     android:id="@+id/main_content"
     android:padding="20dp"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
     <LinearLayout
         android:layout_width="match_parent"
@@ -19,8 +19,8 @@
             android:paddingBottom="15dp"
             android:layout_height="wrap_content">
             <ImageView
-                android:layout_width="130dp"
-                android:layout_height="130dp"
+                android:layout_width="200dp"
+                android:layout_height="100dp"
                 android:src="@drawable/aihome"
                 />
         </LinearLayout>
@@ -28,32 +28,77 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="10dp"
-            >
-            <EditText
+            android:padding="10dp">
+            <com.rengwuxian.materialedittext.MaterialEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
                 android:hint="@string/username"
-                android:layout_marginBottom="10dp"
-                android:id="@+id/username"
+                app:met_floatingLabel="normal"
+                android:layout_marginBottom="15dp"
+                android:id="@+id/email"
                 />
-            <EditText
+            <com.rengwuxian.materialedittext.MaterialEditText
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
                 android:hint="@string/password"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="40dp"
+                app:met_floatingLabel="normal"
                 android:id="@+id/password"
                 />
             <Button
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="15dp"
+                android:padding="12dp"
                 android:text="Login"
                 android:textSize="20sp"
                 android:id="@+id/loginbutton"
-                android:backgroundTint="@color/colorPrimary"
+                android:background="@drawable/corner_background"
                 android:textColor="@android:color/white"
+                android:fontFamily="@font/valeraround"
+                />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_gravity="center"
+            android:gravity="center"
+            android:layout_marginTop="70dp"
+            android:orientation="vertical"
+            android:layout_height="wrap_content">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="horizontal"
+                android:layout_gravity="center"
+                android:gravity="center"
+                android:layout_marginBottom="15dp"
+                android:layout_height="wrap_content">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Don't have any account?"
+                    android:layout_marginRight="10dp"
+                    android:textSize="16sp"
+                    android:fontFamily="@font/valeraround"
+                    />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/signup"
+                    android:textColor="@color/colorBlue"
+                    android:textSize="15sp"
+                    android:id="@+id/goto_signup"
+                    android:fontFamily="@font/valeraround"
+                    />
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/forgot"
+                android:textColor="@color/colorBlue"
+                android:textSize="15sp"
+                android:id="@+id/goto_forgot"
+                android:fontFamily="@font/valeraround"
                 />
         </LinearLayout>
     </LinearLayout>

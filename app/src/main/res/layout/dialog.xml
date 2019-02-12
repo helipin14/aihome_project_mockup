@@ -12,6 +12,7 @@
         android:textSize="16sp"
         android:textColor="@color/colorBlack"
         android:textColorHint="@color/colorBlack"
+        android:fontFamily="@font/valeraround"
         android:outlineAmbientShadowColor="@color/colorPrimary"
         />
 </LinearLayout>

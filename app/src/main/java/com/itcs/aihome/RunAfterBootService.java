@@ -59,7 +59,7 @@ public class RunAfterBootService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         String message = "RunAfterBootService onStartCommand() method.";
-//        setOnTimer();
+        setOnTimer();
         Log.d(TAG_BOOT_BROADCAST_RECEIVER, message);
         return super.onStartCommand(intent, flags, startId);
     }
@@ -70,6 +70,7 @@ public class RunAfterBootService extends Service {
     }
 
     private void setOnTimer() {
+        Toast.makeText(this, "Service started", Toast.LENGTH_LONG).show();
         String data = getDefaults("data", getApplicationContext());
         if(!TextUtils.isEmpty(data)) {
             try {
@@ -87,7 +88,6 @@ public class RunAfterBootService extends Service {
                             String iddevice = jsonObject2.getString("iddevice");
                             String baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
                             String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                            Toast.makeText(this, jsonObject2.toString(), Toast.LENGTH_LONG).show();
 //                            if(!jsonObject2.isNull("timer")) {
 //                                JSONObject timer = jsonObject2.getJSONObject("timer");
 //                                List<Integer> days = convertStringToList(timer.getString("hari"));

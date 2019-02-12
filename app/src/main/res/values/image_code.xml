@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="angle_right">&#xf105;</string>
+    <string name="arrow_left">&#xf060;</string>
+    <string name="heart">&#xf004;</string>
+    <string name="minus_circle">&#xf056;</string>
+    <string name="exclamation_triangle">&#xf071;</string>
+    <string name="exclamation_circle">&#xf06a;</string>
+    <string name="sync">&#xf021;</string>
+    <string name="circle">&#xf111;</string>
+    <string name="check_circle">&#xf058;</string>
+    <string name="qrcode">&#xf029;</string>
+    <string name="trash">&#xf2ed;</string>
+    <string name="pin_location">&#xf3c5;</string>
+    <string name="power_off">&#xf011;</string>
+    <string name="cloud">&#xf0c2;</string>
+    <string name="cog">&#xf013;</string>
+    <string name="user">&#xf007;</string>
+    <string name="tools">&#xf7d9;</string>
+    <string name="times">&#xf00d;</string>
+    <string name="plus">&#xf067;</string>
+    <string name="wifi">&#xf1eb;</string>
+    <string name="list">&#xf03a;</string>
+</resources>

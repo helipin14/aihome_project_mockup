@@ -1,16 +1,10 @@
 package com.itcs.aihome;
 
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.net.ConnectivityManager;
-import android.net.Network;
 import android.net.NetworkInfo;
-import android.os.IBinder;
-import android.util.Log;
-import android.widget.Toast;
 
 public class CheckConnection extends BroadcastReceiver {
     public static CheckConnectionListener checkConnectionListener;

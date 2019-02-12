@@ -10,7 +10,32 @@
     <string name="item4">Voice</string>
     <string name="item5">Accounts</string>
     <string name="device_hint">Enter new device name</string>
-    <string name="username">Username</string>
+    <string name="username">Email</string>
     <string name="password">Password</string>
     <string name="change">CHANGE</string>
+    <string name="signup">Sign Up</string>
+    <string name="forgot">Forgot Password</string>
+    <string name="scanqrcode">Scan Your QR Code Here</string>
+    <string name="next">Next</string>
+    <string name="usershortlist">Helipin, Ricky, Willy, Welly, ....</string>
+    <string name="device">Device</string>
+    <string-array name="sort">
+        <item>Group by device</item>
+        <item>Group by room</item>
+    </string-array>
+    <string-array name="tvTextMatches">Text Matches</string-array>
+    <string-array name="sNoOfMatches">No of Matches</string-array>
+    <string-array name="etSearchHint">Speech hint here</string-array>
+    <string-array name="saNoOfMatches">
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+    </string-array>
 </resources>

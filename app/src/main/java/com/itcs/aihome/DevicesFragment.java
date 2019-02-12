@@ -1,14 +1,19 @@
 package com.itcs.aihome;
 
+import android.app.AlertDialog;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.NetworkOnMainThreadException;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.text.TextUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -28,7 +33,6 @@ import com.android.volley.toolbox.Volley;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
-import org.w3c.dom.Text;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -38,14 +42,16 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import io.socket.client.Socket;
+import io.socket.emitter.Emitter;
 import okhttp3.MultipartBody;
 import okhttp3.OkHttpClient;
 import okhttp3.RequestBody;
 
 public class DevicesFragment extends Fragment {
 
-    private ExpandableGridView gridView1, gridView2;
-    private GridViewAdapter adapter, adapter2;
+    private RecyclerView light_container, ac_container;
+    private GridAdapter light_adapter, ac_adapter;
     public String idupdate, data;
     private String TAG;
     private RadioButton onac, offac, onlight, offlight;
@@ -53,8 +59,16 @@ public class DevicesFragment extends Fragment {
     private Sinkron sinkron;
     private Timer timer;
     private TimerTask doAsyncTask;
-    private int on, off = 0;
-    private int on_ac, off_ac = 0;
+    private int on_light, off_light, on_ac, off_ac = 0;
+    private OkHttpClient okHttpClient;
+    private okhttp3.Response response;
+    private boolean isEnabled = false;
+    private Socket socket;
+    private SocketListener listener;
+    private SolidIconTextView refresh;
+    private String iduser;
+    private AlertDialog alertDialog;
+    private int spacing = 5;
 
     public static DevicesFragment newInstance() {
         DevicesFragment devicesFragment = new DevicesFragment();
@@ -65,59 +79,56 @@ public class DevicesFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.lights, container, false);
-        gridView1 =  view.findViewById(R.id.detail_gridview2);
-        gridView2 =  view.findViewById(R.id.detail_gridview3);
         onlight =  view.findViewById(R.id.on_light);
         offlight =  view.findViewById(R.id.off_light);
         onac =  view.findViewById(R.id.on_ac);
         offac =  view.findViewById(R.id.off_ac);
+        refresh = view.findViewById(R.id.refresh_data);
+        light_container = view.findViewById(R.id.data_light);
+        ac_container = view.findViewById(R.id.data_ac);
 
         TAG = getContext().getClass().getSimpleName();
-        getData();
+        getDataUser();
 
+        startSocket();
         setLights();
         setAC();
         lightControl();
         AcControl();
-//        sinkronUpdate();
+        refreshData();
+        sinkronDevices();
         return view;
     }
 
     @Override
-    public void onDestroyView() {
+    public void onResume() {
+        super.onResume();
+        checkIsAllOnOrOff();
+        refreshGridView();
+    }
+
+    @Override
+    public void onDestroyView() throws NullPointerException {
         super.onDestroyView();
-//        timer.cancel();
+        Log.e(TAG, "Destroy view : Sinkron telah berhenti");
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
-//        timer.cancel();
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-//        timer.cancel();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-//        timer.cancel();
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
     }
 
     private void AcControl() {
         onac.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                matikanSemuaAC( "on");
+                matikanSemuaAC( "0");
             }
         });
         offac.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                matikanSemuaAC( "off");
+                matikanSemuaAC( "1");
             }
         });
     }
@@ -129,7 +140,7 @@ public class DevicesFragment extends Fragment {
                 JSONObject jsonObject = new JSONObject(data);
                 JSONArray controller = jsonObject.getJSONArray("controller");
                 for (int i = 0; i < controller.length(); i++) {
-                    JSONObject jsonObject1 = controller.getJSONObject(i);
+                    JSONObject jsonObject1 = controller .getJSONObject(i);
                     if(!jsonObject1.isNull("device")) {
                         JSONArray devices = jsonObject1.getJSONArray("device");
                         for(int x = 0; x < devices.length(); x++) {
@@ -159,38 +170,44 @@ public class DevicesFragment extends Fragment {
     }
 
     private void checkIsAllOnOrOff() {
-        String data = getDefaults("data", getContext());
-        if(!TextUtils.isEmpty(data)) {
+        if(getDefaults("data", getContext()) != null) {
+            String data = getDefaults("data", getContext());
             try {
                 JSONObject jsonObject = new JSONObject(data);
-                JSONArray controller = jsonObject.getJSONArray("controller");
-                for (int i = 0; i < controller.length(); i++) {
-                    JSONObject jsonObject1 = controller.getJSONObject(i);
-                    if(!jsonObject1.isNull("device")) {
-                        JSONArray devices = jsonObject1.getJSONArray("device");
-                        for(int x = 0; x < devices.length(); x++) {
-                            JSONObject jsonObject2 = devices.getJSONObject(x);
-                            if(jsonObject2.getString("type").equals("light")) {
-                                if(jsonObject2.getString("status").equals("on")) {
-                                    on += 1;
-                                } else {
-                                    off += 1;
-                                }
-                                if(on == devices.length() / 2) {
-                                    onlight.setChecked(true);
-                                } else if(off == devices.length() / 2) {
-                                    offlight.setChecked(true);
-                                }
-                            } else {
-                                if(jsonObject2.getString("status").equals("on")) {
-                                    on_ac += 1;
-                                } else {
-                                    off_ac += 1;
-                                }
-                                if(on_ac == devices.length() / 2) {
-                                    onac.setChecked(true);
-                                } else if(off_ac == devices.length() / 2) {
-                                    offac.setChecked(true);
+                JSONArray house = jsonObject.getJSONArray("house");
+                for (int i = 0; i < house.length(); i++) {
+                    JSONObject jsonObject1 = house.getJSONObject(i);
+                    if(!jsonObject1.isNull("controller")) {
+                        JSONArray controller = jsonObject1.getJSONArray("controller");
+                        for(int x = 0; x < controller.length(); x++) {
+                            JSONObject jsonObject2 = controller.getJSONObject(x);
+                            if(!jsonObject2.isNull("appliances")) {
+                                JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                                for(int j = 0; j < appliances.length(); j++) {
+                                    int count_on = 0;
+                                    int count_off = 0;
+                                    JSONObject jsonObject3 = appliances.getJSONObject(j);
+                                    if(!jsonObject3.isNull("device")) {
+                                        String type = jsonObject3.getString("type");
+                                        int length = jsonObject3.getJSONArray("device").length();
+                                        if(type.equals("light")) {
+                                            count_off = getCount("light", 1);
+                                            count_on = getCount("light", 0);
+                                            if(length == count_off) {
+                                                offlight.setChecked(true);
+                                            } else if(length == count_on) {
+                                                onlight.setChecked(true);
+                                            }
+                                        } else {
+                                            count_off = getCount("ac", 1);
+                                            count_on = getCount("ac", 0);
+                                            if(length == count_off) {
+                                                offac.setChecked(true);
+                                            } else if(length == count_on) {
+                                                onac.setChecked(true);
+                                            }
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -198,54 +215,109 @@ public class DevicesFragment extends Fragment {
                 }
             } catch (JSONException e) {
                 e.printStackTrace();
+                Log.e(TAG, "checkIsAllOnOrOff: " + e.getMessage());
             }
         }
     }
+
+    private int getCount(String type, int status) {
+        int count = 0;
+        if(getDefaults("data", getContext()) != null) {
+            try {
+                String data = getDefaults("data", getContext());
+                JSONObject jsonObject = new JSONObject(data);
+                JSONArray house = jsonObject.getJSONArray("house");
+                for (int i = 0; i < house.length(); i++) {
+                    JSONObject jsonObject1 = house.getJSONObject(i);
+                    if(!jsonObject1.isNull("controller")) {
+                        JSONArray controller = jsonObject1.getJSONArray("controller");
+                        for(int x = 0; x < controller.length(); x++) {
+                            JSONObject jsonObject2 = controller.getJSONObject(x);
+                            if(!jsonObject2.isNull("appliances")) {
+                                JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                                for(int j = 0; j < appliances.length(); j++) {
+                                    JSONObject jsonObject3 = appliances.getJSONObject(j);
+                                    if(!jsonObject3.isNull("device")) {
+                                        if(jsonObject3.getString("type").equals(type)) {
+                                            JSONArray devices = jsonObject3.getJSONArray("device");
+                                            for(int a = 0; a < devices.length(); a++) {
+                                                JSONObject jsonObject4 = devices.getJSONObject(a);
+                                                if(jsonObject4.getInt("status") == status) {
+                                                    count += 1;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+                Log.e(TAG, "checkIsAllOnOrOff: " + e.getMessage());
+            }
+        }
+        return count;
+    }
+
 
     private void lightControl() {
         onlight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                matikanSemuaLampu( "on");
+                matikanSemuaLampu( "0");
             }
         });
         offlight.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                matikanSemuaLampu("off");
+                matikanSemuaLampu("1");
             }
         });
     }
 
     private void matikanSemuaLampu(String action) {
-        String data = getDefaults("data", getContext());
-        if(!TextUtils.isEmpty(data)) {
+        if(getDefaults("data", getContext()) != null) {
             try {
+                String data = getDefaults("data", getContext());
                 JSONObject jsonObject = new JSONObject(data);
-                JSONArray jsonArray = jsonObject.getJSONArray("controller");
-                for(int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                    String blynk_key = jsonObject1.getString("blynk_key");
-                    if(!jsonObject1.isNull("device")) {
-                        JSONArray devices = jsonObject1.getJSONArray("device");
-                        for(int x = 0; x < devices.length(); x++) {
-                            JSONObject jsonObject2 = devices.getJSONObject(x);
-                            if(jsonObject2.getString("type").equals("light")) {
-                                String pin = jsonObject2.getString("pin");
-                                String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                                String iddevice = jsonObject2.getString("iddevice");
-                                String baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
-                                if(action.equals("on")) {
-                                    blynkurl += "?value=1";
-                                } else {
-                                    blynkurl += "?value=0";
+                JSONArray house = jsonObject.getJSONArray("house");
+                for (int i = 0; i < house.length(); i++) {
+                    JSONObject jsonObject1 = house.getJSONObject(i);
+                    String idaccess = jsonObject1.getString("idaccess");
+                    if(!jsonObject1.isNull("controller")) {
+                        JSONArray controller = jsonObject1.getJSONArray("controller");
+                        for(int x = 0; x < controller.length(); x++) {
+                            JSONObject jsonObject2 = controller.getJSONObject(x);
+                            String idcontroller = jsonObject2.getString("idcontroller");
+                            if(!jsonObject2.isNull("appliances")) {
+                                JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                                for(int j = 0; j < appliances.length(); j++) {
+                                    JSONObject jsonObject3 = appliances.getJSONObject(j);
+                                    String type = jsonObject3.getString("type");
+                                    if(type.equals("light")) {
+                                        if(!jsonObject3.isNull("device")) {
+                                            JSONArray devices = jsonObject3.getJSONArray("device");
+                                            for(int a = 0; a < devices.length(); a++) {
+                                                JSONObject jsonObject4 = devices.getJSONObject(a);
+                                                String iddevice = jsonObject4.getString("iddevice");
+                                                JSONObject jsonObject5 = new JSONObject();
+                                                jsonObject5.put("idaccess", idaccess);
+                                                jsonObject5.put("iddevice",iddevice);
+                                                jsonObject5.put("action", action);
+                                                jsonObject5.put("idcontroller", idcontroller);
+                                                socket.emit("trigger", jsonObject5);
+                                            }
+                                        }
+                                    }
                                 }
-                                makeRequestBlynk(blynkurl);
-                                makeRequestTrigger(baseUrl, "device", action, iddevice);
                             }
                         }
                     }
                 }
+                setDefaults("data", jsonObject.toString(), getContext());
+                Log.e(TAG, "matikanSemuaLampu: " + jsonObject.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -253,34 +325,44 @@ public class DevicesFragment extends Fragment {
     }
 
     private void matikanSemuaAC(String action) {
-        String data = getDefaults("data", getContext());
-        if(!TextUtils.isEmpty(data)) {
+        if(getDefaults("data", getContext()) != null) {
             try {
+                String data = getDefaults("data", getContext());
                 JSONObject jsonObject = new JSONObject(data);
-                JSONArray jsonArray = jsonObject.getJSONArray("controller");
-                for(int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                    String blynk_key = jsonObject1.getString("blynk_key");
-                    if(!jsonObject1.isNull("device")) {
-                        JSONArray devices = jsonObject1.getJSONArray("device");
-                        for(int x = 0; x < devices.length(); x++) {
-                            JSONObject jsonObject2 = devices.getJSONObject(x);
-                            if(jsonObject2.getString("type").equals("ac")) {
-                                String pin = jsonObject2.getString("pin");
-                                String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                                String iddevice = jsonObject2.getString("iddevice");
-                                String baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
-                                if(action.equals("on")) {
-                                    blynkurl += "?value=1";
-                                } else {
-                                    blynkurl += "?value=0";
+                JSONArray house = jsonObject.getJSONArray("house");
+                for (int i = 0; i < house.length(); i++) {
+                    JSONObject jsonObject1 = house.getJSONObject(i);
+                    String idaccess = jsonObject1.getString("idaccess");
+                    if(!jsonObject1.isNull("controller")) {
+                        JSONArray controller = jsonObject1.getJSONArray("controller");
+                        for(int x = 0; x < controller.length(); x++) {
+                            JSONObject jsonObject2 = controller.getJSONObject(x);
+                            if(!jsonObject2.isNull("appliances")) {
+                                JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                                for(int j = 0; j < appliances.length(); j++) {
+                                    JSONObject jsonObject3 = appliances.getJSONObject(j);
+                                    String type = jsonObject3.getString("type");
+                                    if(type.equals("ac")) {
+                                        if(!jsonObject3.isNull("device")) {
+                                            JSONArray devices = jsonObject3.getJSONArray("device");
+                                            for(int a = 0; a < devices.length(); a++) {
+                                                JSONObject jsonObject4 = devices.getJSONObject(a);
+                                                String iddevice = jsonObject4.getString("iddevice");
+                                                JSONObject jsonObject5 = new JSONObject();
+                                                jsonObject5.put("idaccess", idaccess);
+                                                jsonObject5.put("iddevice",iddevice);
+                                                jsonObject5.put("action", action);
+                                                socket.emit("trigger", jsonObject5);
+                                            }
+                                        }
+                                    }
                                 }
-                                makeRequestBlynk(blynkurl);
-                                makeRequestTrigger(baseUrl, "device", action, iddevice);
                             }
                         }
                     }
                 }
+                setDefaults("data", jsonObject.toString(), getContext());
+                Log.e(TAG, "matikanSemuaAC: " + jsonObject.toString());
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -293,28 +375,41 @@ public class DevicesFragment extends Fragment {
             data = getDefaults("data", getContext());
         }
         models2 = new ArrayList<>();
-        models2.clear();
-        String status = "";
         try {
             JSONObject jsonObject = new JSONObject(data);
-            JSONArray jsonArray = jsonObject.getJSONArray("controller");
-            for(int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                String blynk_key = jsonObject1.getString("blynk_key");
-                if(jsonObject1.isNull("device")) {
-                } else {
-                    JSONArray devices = jsonObject1.getJSONArray("device");
-                    for(int x = 0; x < devices.length(); x++) {
-                        final JSONObject jsonObject2 = devices.getJSONObject(x);
-                        String type = jsonObject2.getString("type");
-                        if(type.equals("ac")) {
-                            String pin = jsonObject2.getString("pin");
-                            String device_name = jsonObject2.getString("device_name");
-                            String baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
-                            String iddevice = jsonObject2.getString("iddevice");
-                            status = jsonObject2.getString("status");
-                            String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                            models2.add(new Model(R.drawable.ac, status, device_name, baseUrl, "ac", iddevice, blynkurl, pin));
+            JSONArray house = jsonObject.getJSONArray("house");
+            for (int i = 0; i < house.length(); i++) {
+                JSONObject jsonObject1 = house.getJSONObject(i);
+                String iddaccess = jsonObject1.getString("idaccess");
+                if(!jsonObject1.isNull("controller")) {
+                    JSONArray controller = jsonObject1.getJSONArray("controller");
+                    for (int x = 0; x < controller.length(); x++) {
+                        JSONObject jsonObject2 = controller.getJSONObject(x);
+                        String idcontroller = jsonObject2.getString("idcontroller");
+                        if(!jsonObject2.isNull("appliances")) {
+                            JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                            for(int a = 0; a < appliances.length(); a++) {
+                                JSONObject jsonObject3 = appliances.getJSONObject(a);
+                                String type = jsonObject3.getString("type");
+                                if(type.equals("ac")) {
+                                    if(!jsonObject3.isNull("device")) {
+                                        JSONArray devices = jsonObject3.getJSONArray("device");
+                                        for(int j = 0; j < devices.length(); j++) {
+                                            int flag;
+                                            JSONObject jsonObject4 = devices.getJSONObject(j);
+                                            String iddevice = jsonObject4.getString("iddevice");
+                                            int status = jsonObject4.getInt("status");
+                                            String device_name = jsonObject4.getString("name");
+                                            if(status == 1) {
+                                                flag = 0;
+                                            } else {
+                                                flag = 1;
+                                            }
+                                            models2.add(new Model(R.drawable.ac, status, device_name, "AC", iddevice, flag, iddaccess, idcontroller));
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -324,65 +419,67 @@ public class DevicesFragment extends Fragment {
         }
 
         if(models2.size() > 0) {
-            adapter2 = new GridViewAdapter(getContext(), models2);
-            gridView2.setAdapter(adapter2);
-            gridView2.setExpanded(true);
+            ac_adapter = new GridAdapter(getContext(), models2, socket);
+            ac_container.setLayoutManager(new GridLayoutManager(getContext(), 2));
+            ac_container.addItemDecoration(new SpaceItemDecoration(spacing));
+            ac_container.setAdapter(ac_adapter);
         }
     }
 
     private void setLights() {
-        String data = getDefaults("data", getContext());
         models = new ArrayList<>();
-        models.clear();
-        String status = "";
-        try {
-            JSONObject jsonObject = new JSONObject(data);
-            JSONArray jsonArray = jsonObject.getJSONArray("controller");
-            for(int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                String blynk_key = jsonObject1.getString("blynk_key");
-                if(jsonObject1.isNull("device")) {
-                } else {
-                    JSONArray devices = jsonObject1.getJSONArray("device");
-                    for(int x = 0; x < devices.length(); x++) {
-                        final JSONObject jsonObject2 = devices.getJSONObject(x);
-                        String type = jsonObject2.getString("type");
-                        if(type.equals("light")) {
-                            String pin = jsonObject2.getString("pin");
-                            String device_name = jsonObject2.getString("device_name");
-                            String baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
-                            String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                            String iddevice = jsonObject2.getString("iddevice");
-                            status = jsonObject2.getString("status");
-                            models.add(new Model(R.drawable.bulb, status, device_name, baseUrl, "light", iddevice, blynkurl, pin));
+        if(getDefaults("data", getContext()) != null) {
+            String data = getDefaults("data", getContext());
+            try {
+                JSONObject jsonObject = new JSONObject(data);
+                JSONArray house = jsonObject.getJSONArray("house");
+                for (int i = 0; i < house.length(); i++) {
+                    JSONObject jsonObject1 = house.getJSONObject(i);
+                    String idaccess = jsonObject1.getString("idaccess");
+                    if(!jsonObject1.isNull("controller")) {
+                        JSONArray controller = jsonObject1.getJSONArray("controller");
+                        for (int x = 0; x < controller.length(); x++) {
+                            JSONObject jsonObject2 = controller.getJSONObject(x);
+                            String idcontroller = jsonObject2.getString("idcontroller");
+                            if(!jsonObject2.isNull("appliances")) {
+                                JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                                for(int a = 0; a < appliances.length(); a++) {
+                                    JSONObject jsonObject3 = appliances.getJSONObject(a);
+                                    String type = jsonObject3.getString("type");
+                                    if(type.equals("light")) {
+                                        if(!jsonObject3.isNull("device")) {
+                                            JSONArray devices = jsonObject3.getJSONArray("device");
+                                            for(int j = 0; j < devices.length(); j++) {
+                                                int flag;
+                                                JSONObject jsonObject4 = devices.getJSONObject(j);
+                                                String iddevice = jsonObject4.getString("iddevice");
+                                                int status = jsonObject4.getInt("status");
+                                                String device_name = jsonObject4.getString("name");
+                                                if(status == 1) {
+                                                    flag = 0;
+                                                } else {
+                                                    flag = 1;
+                                                }
+                                                models.add(new Model(R.drawable.bulb, status, device_name, "light", iddevice, flag, idaccess, idcontroller));
+                                            }
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
                 }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        } catch (JSONException e) {
-            e.printStackTrace();
         }
 
         if(models.size() > 0) {
-            adapter = new GridViewAdapter(getContext(), models);
-            gridView1.setAdapter(adapter);
-            gridView1.setExpanded(true);
+            light_adapter = new GridAdapter(getContext(), models, socket);
+            light_container.setLayoutManager(new GridLayoutManager(getContext(), 2));
+            light_container.addItemDecoration(new SpaceItemDecoration(spacing));
+            light_container.setAdapter(light_adapter);
         }
-    }
-
-    private void makeRequestBlynk(String baseUrl) {
-        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        StringRequest stringRequest = new StringRequest(Request.Method.GET, baseUrl, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-            }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-            
-            }
-        });
-        requestQueue.add(stringRequest);
     }
 
     public static void setDefaults(String key, String value, Context context) {
@@ -398,8 +495,9 @@ public class DevicesFragment extends Fragment {
     }
 
     private String SinkronUpdate() throws IOException {
-        String url = "http://dataaihome.itcs.co.id/syncThings.php";
-        OkHttpClient client = new OkHttpClient();
+        String result = "";
+        String url = config.server_temp + "syncThings.php";
+        okHttpClient = new OkHttpClient();
         RequestBody requestBody = new MultipartBody.Builder()
                 .setType(MultipartBody.FORM)
                 .addFormDataPart("idupdate", idupdate)
@@ -408,8 +506,11 @@ public class DevicesFragment extends Fragment {
                 .url(url)
                 .post(requestBody)
                 .build();
-        okhttp3.Response response = client.newCall(request).execute();
-        return response.body().string();
+        response = okHttpClient.newCall(request).execute();
+        if(response.isSuccessful()) {
+            result = response.body().string();
+        }
+        return result;
     }
 
     class Sinkron extends AsyncTask<Void, Void, String> {
@@ -428,15 +529,17 @@ public class DevicesFragment extends Fragment {
         protected void onPostExecute(String s) {
             super.onPostExecute(s);
             Log.e(TAG, "Response dari update di devices fragment: " + s);
-            updateUi(s);
             if(s == null || isCancelled()) {
                 Log.e(TAG, "AsyncTask has been closed");
                 sinkron.cancel(true);
+            } else if(!TextUtils.isEmpty(s)){
+                updateUi(s);
             }
         }
     }
 
     private void sinkronUpdate() {
+        isEnabled = true;
         final Handler handler = new Handler();
         timer = new Timer();
         doAsyncTask = new TimerTask() {
@@ -454,50 +557,58 @@ public class DevicesFragment extends Fragment {
         timer.schedule(doAsyncTask, 0, 500);
     }
 
-    private void getData() {
-        data = getDefaults("data", getContext());
-        try {
-            JSONObject jsonObject = new JSONObject(data);
-            idupdate = jsonObject.getString("idupdate");
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
 
-    private void changeStatus(String iddevice, String status) {
-        String data = getDefaults("data", getContext());
-        if(!TextUtils.isEmpty(data)) {
-            try {
-                JSONObject jsonObject = new JSONObject(data);
-                JSONArray controller = jsonObject.getJSONArray("controller");
-                for (int i = 0; i < controller.length(); i++) {
-                    JSONObject jsonObject1 = controller.getJSONObject(i);
-                    if(!jsonObject1.isNull("device")) {
-                        JSONArray devices = jsonObject1.getJSONArray("device");
-                        for(int x = 0; x < devices.length();x++) {
-                            JSONObject jsonObject2 = devices.getJSONObject(x);
-                            if(jsonObject2.getString("iddevice").equals(iddevice)) {
-                                jsonObject2.put("status", status);
+    private void changeStatus(String iddevice, int status, String type) {
+        if(getDefaults("data", getContext()) != null) {
+            String data = getDefaults("data", getContext());
+            if(!TextUtils.isEmpty(data)) {
+                try {
+                    JSONObject jsonObject = new JSONObject(data);
+                    JSONArray house = jsonObject.getJSONArray("house");
+                    for (int i = 0; i < house.length(); i++) {
+                        JSONObject jsonObject1 = house.getJSONObject(i);
+                        if(!jsonObject1.isNull("controller")) {
+                            JSONArray controller = jsonObject1.getJSONArray("controller");
+                            for(int x = 0; x < controller.length(); x++) {
+                                JSONObject jsonObject2 = controller.getJSONObject(x);
+                                if(!jsonObject2.isNull("appliances")) {
+                                    JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                                    for(int j = 0; j < appliances.length(); j++) {
+                                        JSONObject jsonObject3 = appliances.getJSONObject(j);
+                                        if(jsonObject3.getString("type").equals(type)) {
+                                            if(!jsonObject3.isNull("device")) {
+                                                JSONArray devices = jsonObject3.getJSONArray("device");
+                                                for(int a = 0; a < devices.length(); a++) {
+                                                    JSONObject jsonObject4 = devices.getJSONObject(a);
+                                                    if(jsonObject4.getString("iddevice").equals(iddevice)) {
+                                                        jsonObject4.put("status", status);
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
+                    setDefaults("data", jsonObject.toString(), getContext());
+                    Log.e(TAG, "changeStatus: " + jsonObject.toString());
+                } catch(JSONException e) {
+                    e.printStackTrace();
                 }
-                setDefaults("data", jsonObject.toString(), getContext());
-            } catch(JSONException e) {
-                e.printStackTrace();
             }
         }
     }
 
     private void changeIdUpdate(String idupdate_update) {
-        String data = getDefaults("data", getContext());
-        if(!TextUtils.isEmpty(data)) {
+        if(getDefaults("data", getContext()) != null) {
             try {
+                String data = getDefaults("data", getContext());
+                idupdate = idupdate_update;
                 JSONObject jsonObject = new JSONObject(data);
                 String idupdate_latest = jsonObject.getString("idupdate");
                 idupdate_latest = idupdate_update;
                 jsonObject.put("idupdate", idupdate_latest);
-                idupdate = idupdate_latest;
                 setDefaults("data", jsonObject.toString(), getContext());
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -506,84 +617,18 @@ public class DevicesFragment extends Fragment {
     }
 
     private void updateUi(String response) {
-        try {
-            JSONObject jsonObject = new JSONObject(response);
-            String status = jsonObject.getString("status");
-            if(status.equals("Y")) {
-                JSONArray jsonArray = jsonObject.getJSONArray("data_update");
-                for(int i = 0; i < jsonArray.length(); i++) {
-                    JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                    String iddevice = jsonObject1.getString("iddevice");
-                    String value_after = jsonObject1.getString("value_after");
-                    changeStatus(iddevice, value_after);
-                    updateData(iddevice, value_after);
-                }
-                String idupdate = jsonObject.getString("idupdate_latest");
-                changeIdUpdate(idupdate);
-                timer.cancel();
-                Log.e(TAG, "Coba saja");
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        sinkronUpdate();
-                    }
-                }, 1000);
-            }
-        } catch(JSONException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private void updateData(String iddevice, String status) {
-        String data = getDefaults("data", getContext());
-        int image = 0;
-        if(!TextUtils.isEmpty(data)) {
+        if (!TextUtils.isEmpty(response)) {
             try {
-                JSONObject jsonObject = new JSONObject(data);
-                JSONArray controller = jsonObject.getJSONArray("controller");
-                for (int i = 0; i < controller.length(); i++) {
-                    JSONObject jsonObject1 = controller.getJSONObject(i);
-                    String blynk_key = jsonObject1.getString("blynk_key");
-                    if (!jsonObject1.isNull("device")) {
-                        JSONArray devices = jsonObject1.getJSONArray("device");
-                        for (int x = 0; x < devices.length(); x++) {
-                            JSONObject jsonObject2 = devices.getJSONObject(x);
-                            String id_device = jsonObject2.getString("iddevice");
-                            String type = jsonObject2.getString("type");
-                            if (id_device.equals(iddevice)) {
-                                if (type.equals("light")) {
-                                    if (status.equals("on")) {
-                                        image = R.drawable.bulb;
-                                    } else {
-                                        image = R.drawable.bulb_white;
-                                    }
-                                    int position = updateLights(type, iddevice);
-                                    models.remove(position);
-                                    String pin = jsonObject2.getString("pin");
-                                    String device_name = jsonObject2.getString("device_name");
-                                    String baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
-                                    String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                                    models.add(position, new Model(image, status, device_name, baseUrl, "light", iddevice, blynkurl, pin));
-                                    adapter = new GridViewAdapter(getContext(), models);
-                                    gridView1.setAdapter(adapter);
-                                } else {
-                                    int position = updateLights(type, iddevice);
-                                    models2.remove(position);
-                                    if (status.equals("on")) {
-                                        image = R.drawable.ac;
-                                    } else {
-                                        image = R.drawable.ac_white;
-                                    }
-                                    String pin = jsonObject2.getString("pin");
-                                    String device_name = jsonObject2.getString("device_name");
-                                    String baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
-                                    String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                                    models2.add(position, new Model(image, status, device_name, baseUrl, "AC", iddevice, blynkurl, pin));
-                                    adapter2 = new GridViewAdapter(getContext(), models2);
-                                    gridView2.setAdapter(adapter2);
-                                }
-                            }
-                        }
+                JSONObject jsonObject = new JSONObject(response);
+                String status = jsonObject.getString("status");
+                if (status.equals("Y")) {
+                    JSONArray jsonArray = jsonObject.getJSONArray("data_update");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+                        String iddevice = jsonObject1.getString("iddevice");
+                        String value_after = jsonObject1.getString("value_after");
+//                        changeStatus(iddevice, value_after);
+//                        updateData(iddevice, value_after);
                     }
                 }
             } catch (JSONException e) {
@@ -592,7 +637,71 @@ public class DevicesFragment extends Fragment {
         }
     }
 
-    private int updateLights(String type, String iddevice) {
+//    private void updateData(String iddevice, String status) {
+//        String type = getType(iddevice);
+//        int image = 0;
+//        if(getDefaults("data", getContext()) != null) {
+//            try {
+//                String data = getDefaults("data", getContext());
+//                JSONObject jsonObject = new JSONObject(data);
+//                JSONArray controller = jsonObject.getJSONArray("controller");
+//                for (int i = 0; i < controller.length(); i++) {
+//                    JSONObject jsonObject1 = controller.getJSONObject(i);
+//                    String blynk_key = jsonObject1.getString("blynk_key");
+//                    if (!jsonObject1.isNull("device")) {
+//                        JSONArray devices = jsonObject1.getJSONArray("device");
+//                        for (int x = 0; x < devices.length(); x++) {
+//                            JSONObject jsonObject2 = devices.getJSONObject(x);
+//                            String id_device = jsonObject2.getString("iddevice");
+//                            if (id_device.equals(iddevice)) {
+//                                if (type.equals("light")) {
+//                                    int position = getPosition(type, iddevice);
+//                                    int flag = 0;
+//                                    if (status.equals("on")) {
+//                                        image = R.drawable.bulb;
+//                                        flag = 1;
+//                                    } else {
+//                                        flag = 0;
+//                                        image = R.drawable.bulb_white;
+//                                    }
+//                                    models.remove(position);
+//                                    String pin = jsonObject2.getString("pin");
+//                                    String device_name = jsonObject2.getString("device_name");
+//                                    String baseUrl = config.server_temp + "deviceTrigger.php";
+//                                    String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
+//                                    models.add(position, new Model(image, status, device_name, baseUrl, "light", iddevice, blynkurl, pin, flag));
+//                                    adapter = new GridViewAdapter(getContext(), models);
+//                                    gridView1.setAdapter(adapter);
+//                                } else {
+//                                    int position = getPosition(type, iddevice);
+//                                    int flag = 0;
+//                                    models2.remove(position);
+//                                    if (status.equals("on")) {
+//                                        image = R.drawable.ac;
+//                                        flag = 1;
+//                                    } else {
+//                                        flag = 0;
+//                                        image = R.drawable.ac_white;
+//                                    }
+//                                    String pin = jsonObject2.getString("pin");
+//                                    String device_name = jsonObject2.getString("device_name");
+//                                    String baseUrl = config.server_temp + "deviceTrigger.php";
+//                                    String blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
+//                                    models2.add(position, new Model(image, status, device_name, baseUrl, "AC", iddevice, blynkurl, pin, flag));
+//                                    adapter2 = new GridViewAdapter(getContext(), models2);
+//                                    gridView2.setAdapter(adapter2);
+//                                }
+//                            }
+//                        }
+//                    }
+//                }
+//            } catch (JSONException e) {
+//                e.printStackTrace();
+//            }
+//        }
+//    }
+
+    private int getPosition(String type, String iddevice) {
         int position = 0;
         if(type.equals("light")) {
             if(models.size() > 0) {
@@ -614,35 +723,200 @@ public class DevicesFragment extends Fragment {
         return position;
     }
 
-    public void makeRequestTrigger(final String baseUrl, final String tipe, final String action, final String iddevice) {
-        RequestQueue requestQueue = Volley.newRequestQueue(getContext());
-        StringRequest stringRequest = new StringRequest(Request.Method.POST, baseUrl, new Response.Listener<String>() {
-            @Override
-            public void onResponse(String response) {
-                //
+    private void refreshGridView() {
+        String update = getDefaults("update_data", getContext());
+        if (!TextUtils.isEmpty(update)) {
+            if (update.equals("yes")) {
+                setLights();
+                setAC();
+                setDefaults("update_data", "no", getContext());
             }
-        }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-
-            }
-        }) {
-            @Override
-            protected Map<String, String> getParams() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("idtrigger", iddevice);
-                params.put("type", tipe);
-                params.put("action", action);
-                return params;
-            }
-
-            @Override
-            public Map<String, String> getHeaders() throws AuthFailureError {
-                Map<String, String> params = new HashMap<String, String>();
-                params.put("Content-Type", "application/x-www-form-urlencoded");
-                return params;
-            }
-        };
-        requestQueue.add(stringRequest);
+        }
     }
+
+    private void refreshData() {
+        refresh.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showDialogRefresh();
+            }
+        });
+    }
+
+    private void showDialogRefresh() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
+        View view = LayoutInflater.from(getContext()).inflate(R.layout.progress_dialog, null);
+        builder.setView(view);
+        builder.setCancelable(false);
+        alertDialog = builder.create();
+        alertDialog.show();
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                alertDialog.dismiss();
+            }
+        }, 1500);
+    }
+
+    private void getAllData(String response) {
+        try {
+            JSONObject jsonObject = new JSONObject(response);
+            JSONArray controller = jsonObject.getJSONArray("controller");
+            for (int i = 0; i < controller.length(); i++) {
+                JSONObject jsonObject1 = controller.getJSONObject(i);
+                String blynk_key = jsonObject1.getString("blynk_key");
+                if(!jsonObject1.isNull("device")) {
+                    JSONArray devices = jsonObject1.getJSONArray("device");
+                    for(int x = 0; x < devices.length(); x++) {
+                        JSONObject jsonObject2 = devices.getJSONObject(x);
+                        String pin = jsonObject2.getString("pin");
+                        String baseUrl = "http://188.166.206.43:8080/" + blynk_key + "/get/" + pin;
+                        String status = fetchStatus(baseUrl);
+                        Log.e(TAG, "Status : " + status);
+                        jsonObject2.put("status", status);
+                        Log.e(TAG, "Hasil dari refresh : " + jsonObject.toString());
+                    }
+                }
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        } catch (NetworkOnMainThreadException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private String fetchStatus(String baseUrl) throws IOException {
+        okHttpClient = new OkHttpClient();
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url(baseUrl)
+                .method("GET", null)
+                .build();
+        response = okHttpClient.newCall(request).execute();
+        String result = "";
+        if(response.isSuccessful()) {
+            result = response.body().string();
+        }
+        return result;
+    }
+
+    private String fetchData() throws IOException {
+        String url = config.server_temp + "getAll_Things.php";
+        okHttpClient = new OkHttpClient();
+        RequestBody requestBody = new MultipartBody.Builder()
+                .setType(MultipartBody.FORM)
+                .addFormDataPart("iduser", iduser)
+                .build();
+        okhttp3.Request request = new okhttp3.Request.Builder()
+                .url(url)
+                .post(requestBody)
+                .build();
+        response = okHttpClient.newCall(request).execute();
+        String result = "";
+        if(response.isSuccessful()) {
+            result = response.body().string();
+        }
+        return result;
+    }
+
+    private void getDataUser() {
+        String data = getDefaults("data_user", getContext());
+        if(!TextUtils.isEmpty(data)) {
+            try {
+                JSONObject jsonObject = new JSONObject(data);
+                iduser = jsonObject.getString("iduser");
+            } catch(JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void startSocket() {
+        listener = new SocketListener();
+        socket = listener.getSocket();
+        socket.connect();
+        if(socket.connected()) {
+            Log.e(TAG, "startSocket: Connect");
+        }
+    }
+
+    private void sinkronDevices() {
+        socket.on("feedback", new Emitter.Listener() {
+            @Override
+            public void call(Object... args) {
+                try {
+                    JSONObject jsonObject = (JSONObject)args[0];
+                    Log.e(TAG, "call: " + jsonObject.toString());
+                    String section = jsonObject.getString("section");
+                    if(section.equals("trigger")) {
+                        String status = jsonObject.getString("status");
+                        if(status.equals("accepted")) {
+                            checkIsAllOnOrOff();
+                            JSONObject jsonObject1 = jsonObject.getJSONObject("device");
+                            String iddevice = jsonObject1.getString("iddevice");
+                            final int action = jsonObject1.getInt("action");
+                            final String type = getType(iddevice);
+                            changeStatus(iddevice, action, type);
+                            final int position = getPosition(type, iddevice);
+                            Log.e(TAG, "call: " + type);
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    if(type.equals("light")) {
+                                        models.get(position).setStatus(action);
+                                        light_adapter.notifyDataSetChanged();
+                                    } else {
+                                        models2.get(position).setStatus(action);
+                                        ac_adapter.notifyDataSetChanged();
+                                    }
+                                }
+                            });
+                        }
+                    }
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    private String getType(String iddevice) {
+        String type = "";
+        if(getDefaults("data", getContext()) != null) {
+            String data = getDefaults("data", getContext());
+            try {
+                JSONObject jsonObject = new JSONObject(data);
+                JSONArray house = jsonObject.getJSONArray("house");
+                for (int i = 0; i < house.length(); i++) {
+                    JSONObject jsonObject1 = house.getJSONObject(i);
+                    if(!jsonObject1.isNull("controller")) {
+                        JSONArray controller = jsonObject1.getJSONArray("controller");
+                        for(int x = 0; x < controller.length(); x++) {
+                            JSONObject jsonObject2 = controller.getJSONObject(x);
+                            if(!jsonObject2.isNull("appliances")) {
+                                JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                                for(int j = 0; j < appliances.length(); j++) {
+                                    JSONObject jsonObject3 = appliances.getJSONObject(j);
+                                    if(!jsonObject3.isNull("device")) {
+                                        JSONArray devices = jsonObject3.getJSONArray("device");
+                                        for(int a = 0; a < devices.length(); a++) {
+                                            JSONObject jsonObject4 = devices.getJSONObject(a);
+                                            if(jsonObject4.getString("iddevice").equals(iddevice)) {
+                                                type = jsonObject3.getString("type");
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return type;
+    }
+
 }

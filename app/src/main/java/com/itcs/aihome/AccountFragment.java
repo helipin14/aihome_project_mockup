@@ -9,6 +9,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.CardView;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +32,6 @@ public class AccountFragment extends Fragment {
     private List<String> items;
     private List<Integer> images;
     private String iduser, username;
-    private TextView textView;
 
     public static AccountFragment newInstance() {
         AccountFragment accountFragment = new AccountFragment();
@@ -43,34 +43,27 @@ public class AccountFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.account, container, false);
         listview =  view.findViewById(R.id.list_account);
-        textView = view.findViewById(R.id.username_account);
         items = new ArrayList<>();
         images = new ArrayList<>();
-        items.add("Account Name");
-        items.add("Change Password");
-        items.add("KWH Settings");
-        images.add(R.drawable.user2);
-        images.add(R.drawable.lock);
-        images.add(R.drawable.kwh);
+        items.add("Account");
+        items.add("Host settings");
+        images.add(R.string.user);
+        images.add(R.string.tools);
         adapter = new AccountAdapter(getContext(), items, images);
         listview.setAdapter(adapter);
 
         getDataUser();
-        textView.setText(username);
 
         listview.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                Intent intent = new Intent(getContext(), account_response.class);
+                Intent intent = new Intent(getContext(), AccountResponse.class);
                 switch(i) {
                     case 0:
-                        intent.putExtra("tipe", "username");
+                        intent.putExtra("tipe", "account");
                         break;
                     case 1:
-                        intent.putExtra("tipe", "password");
-                        break;
-                    case 2:
-                        intent.putExtra("tipe", "kwh_settings");
+                        intent.putExtra("tipe", "host");
                         break;
                 }
                 startActivity(intent);

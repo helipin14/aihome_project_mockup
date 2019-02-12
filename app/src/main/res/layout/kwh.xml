@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:scrollbars="none"
+    android:background="#f7f7f7"
     android:fillViewport="true">
     <LinearLayout
         android:layout_width="match_parent"
@@ -11,6 +13,7 @@
         <android.support.v7.widget.Toolbar
             android:layout_width="match_parent"
             android:background="@color/colorPrimary"
+            android:id="@+id/kwh_toolbar"
             android:layout_height="wrap_content">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -21,6 +24,7 @@
                     android:text="KWH"
                     android:textAlignment="center"
                     android:textSize="20sp"
+                    android:fontFamily="@font/valeraround"
                     android:textColor="@android:color/white"
                     />
             </LinearLayout>
@@ -28,20 +32,64 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:orientation="vertical"
-            android:paddingBottom="20dp"
+            android:padding="20dp"
+            android:layout_gravity="center"
+            android:gravity="center"
             android:layout_height="wrap_content">
             <LinearLayout
                 android:layout_width="match_parent"
                 android:orientation="vertical"
+                android:paddingBottom="20dp"
+                android:background="@drawable/bgwhite_corner"
                 android:layout_height="wrap_content">
-                <ListView
+                <com.itcs.aihome.WrapContentViewPager
                     android:layout_width="match_parent"
-                    android:id="@+id/kwh_listview"
-                    android:paddingVertical="10dp"
-                    android:scrollbars="none"
-                    android:paddingHorizontal="10dp"
+                    android:id="@+id/kwh_hari_ini"
+                    android:overScrollMode="never"
+                    android:clipToPadding="false"
                     android:layout_height="wrap_content">
-                </ListView>
+                </com.itcs.aihome.WrapContentViewPager>
+                <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+                    android:id="@+id/dots_indicator"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    app:dotsColor="@color/colorPrimary"
+                    app:dotsCornerRadius="8dp"
+                    android:layout_marginTop="15dp"
+                    app:dotsSize="8dp"
+                    app:dotsSpacing="4dp"
+                    app:dotsWidthFactor="2.5"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    />
+            </LinearLayout>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:orientation="vertical"
+                android:layout_marginTop="20dp"
+                android:padding="15dp"
+                android:background="@drawable/bgwhite_corner"
+                android:layout_height="wrap_content">
+                <com.itcs.aihome.WrapContentViewPager
+                    android:layout_width="match_parent"
+                    android:id="@+id/grafik_viewpager"
+                    android:overScrollMode="never"
+                    android:clipToPadding="false"
+                    android:layout_height="wrap_content">
+                </com.itcs.aihome.WrapContentViewPager>
+                <com.tbuonomo.viewpagerdotsindicator.DotsIndicator
+                    android:layout_width="match_parent"
+                    android:id="@+id/grafik_dots"
+                    app:dotsColor="@color/colorPrimary"
+                    app:dotsCornerRadius="8dp"
+                    android:layout_marginTop="15dp"
+                    app:dotsSize="8dp"
+                    app:dotsSpacing="4dp"
+                    app:dotsWidthFactor="2.5"
+                    android:layout_gravity="center"
+                    android:gravity="center"
+                    android:layout_height="wrap_content">
+                </com.tbuonomo.viewpagerdotsindicator.DotsIndicator>
             </LinearLayout>
         </LinearLayout>
     </LinearLayout>

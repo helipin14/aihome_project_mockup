@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Socket;
 import io.socket.emitter.Emitter;
@@ -52,15 +53,17 @@ public class Adapter extends PagerAdapter {
     private Context context;
     public int flag = 0;
     private String baseUrl;
-    private String TAG;
+    private String TAG, status;
     private AssetManager assetManager;
     private Typeface typeface;
     private Socket socket;
     private SocketListener listener;
+    private String idupdate;
 
     public Adapter(List<Model> models, Context context) {
         this.models = models;
         this.context = context;
+        notifyDataSetChanged();
     }
 
     private static class ViewHolder {
@@ -68,7 +71,6 @@ public class Adapter extends PagerAdapter {
         CardView cardView;
         ImageButton cog;
         TextView status, devices, detail;
-
     }
 
     @Override
@@ -90,8 +92,9 @@ public class Adapter extends PagerAdapter {
 
         assetManager = context.getAssets();
         typeface = Typeface.createFromAsset(assetManager, "fonts/valeraround.ttf");
-        startSocket();
-
+//        startSocket();
+//        getIdUpdate();
+//        sinkronUpdate();
         viewHolder.imageView = view.findViewById(R.id.image);
         viewHolder.status = view.findViewById(R.id.status);
         viewHolder.devices = view.findViewById(R.id.devices);
@@ -107,8 +110,9 @@ public class Adapter extends PagerAdapter {
 
         TAG = context.getClass().getSimpleName();
 
-        if (models.get(position).getStatus().equals("on")) {
-            flag = 1;
+        if (models.get(position).getStatus() == 1) {
+            viewHolder.cardView.setEnabled(false);
+            status = "OFF";
             viewHolder.cardView.setBackgroundResource(R.drawable.bg_gradient);
             viewHolder.status.setTextColor(Color.WHITE);
             viewHolder.devices.setTextColor(Color.WHITE);
@@ -120,8 +124,10 @@ public class Adapter extends PagerAdapter {
             }
             viewHolder.detail.setTextColor(Color.WHITE);
             viewHolder.ex.setImageResource(R.drawable.exclamation_white);
-        } else if (models.get(position).getStatus().equals("off")) {
-            flag = 1;
+            enableCardView(viewHolder);
+        } else if (models.get(position).getStatus()==0) {
+            viewHolder.cardView.setEnabled(false);
+            status = "ON";
             viewHolder.cardView.setBackgroundResource(R.drawable.box);
             viewHolder.status.setTextColor(Color.parseColor("#414141"));
             viewHolder.devices.setTextColor(Color.parseColor("#414141"));
@@ -133,20 +139,21 @@ public class Adapter extends PagerAdapter {
             }
             viewHolder.detail.setTextColor(Color.parseColor("#414141"));
             viewHolder.ex.setImageResource(R.drawable.exclamation);
+            enableCardView(viewHolder);
         }
 
-        viewHolder.status.setText(models.get(position).getStatus().toUpperCase());
+        viewHolder.status.setText(status.toUpperCase());
         viewHolder.devices.setText(models.get(position).getDevices());
 
         viewHolder.cog.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(context, Detail.class);
+                intent.putExtra("position", String.valueOf(position));
                 intent.putExtra("device", models.get(position).getDevices());
                 intent.putExtra("status", models.get(position).getStatus());
                 intent.putExtra("gambar", models.get(position).getImage());
                 intent.putExtra("iddevice", models.get(position).getIddevice());
-                intent.putExtra("pin", models.get(position).getPin());
                 intent.putExtra("type", viewHolder.imageView.getTag().toString());
                 context.startActivity(intent);
             }
@@ -154,42 +161,13 @@ public class Adapter extends PagerAdapter {
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                baseUrl = models.get(position).getBlynkurl();
                 String action = "";
-                if (flag == 0) {
-                    flag = 1;
+                if (models.get(position).getFlag() == 0) {
+                    models.get(position).setFlag(1);
                     action = "on";
-                    String url = baseUrl + "?value=1";
-                    viewHolder.cardView.setBackgroundResource(R.drawable.bg_gradient);
-                    viewHolder.status.setTextColor(Color.WHITE);
-                    viewHolder.devices.setTextColor(Color.WHITE);
-                    viewHolder.cog.setBackgroundResource(R.drawable.cog_white);
-                    if (viewHolder.imageView.getTag().equals("light")) {
-                        viewHolder.imageView.setImageResource(R.drawable.bulb_white);
-                    } else {
-                        viewHolder.imageView.setImageResource(R.drawable.ac_white);
-                    }
-                    viewHolder.detail.setTextColor(Color.WHITE);
-                    viewHolder.ex.setImageResource(R.drawable.exclamation_white);
-//                    makeRequest(url);
-//                    makeRequest2(models.get(position).getBaseUrl(),  "device", action,  models.get(position).getIddevice());
                 } else {
-                    flag = 0;
+                    models.get(position).setFlag(0);
                     action = "off";
-                    String url = baseUrl + "?value=0";
-                    viewHolder.cardView.setBackgroundResource(R.drawable.box);
-                    viewHolder.status.setTextColor(Color.parseColor("#414141"));
-                    viewHolder.devices.setTextColor(Color.parseColor("#414141"));
-                    viewHolder.cog.setBackgroundResource(R.drawable.cog);
-                    if (viewHolder.imageView.getTag().equals("light")) {
-                        viewHolder.imageView.setImageResource(models.get(position).getImage());
-                    } else {
-                        viewHolder.imageView.setImageResource(models.get(position).getImage());
-                    }
-                    viewHolder.detail.setTextColor(Color.parseColor("#414141"));
-                    viewHolder.ex.setImageResource(R.drawable.exclamation);
-//                    makeRequest(url);
-//                    makeRequest2(models.get(position).getBaseUrl(),  "device", action,  models.get(position).getIddevice());
                 }
             }
         });
@@ -205,9 +183,7 @@ public class Adapter extends PagerAdapter {
     @Override
     public void destroyItem(@NonNull ViewGroup container, int position, @NonNull Object object) {
         ((ViewPager) container).removeView((View) object);
-        if(socket.connected()) {
-            socket.disconnect();
-        }
+//        disconnectSocket();
     }
 
     @Override
@@ -353,37 +329,49 @@ public class Adapter extends PagerAdapter {
         requestQueue.add(stringRequest);
     }
 
-    public void toggleButton(View view, int position) {
-        baseUrl = models.get(position).getBlynkurl();
-        String action = "";
-        if (flag == 0) {
-            flag = 1;
-            action = "on";
-            String url = baseUrl + "?value=1";
-
-//            makeRequest(url);
-//            makeRequest2(models.get(position).getBaseUrl(),  "device", action,  models.get(position).getIddevice());
-        } else {
-            flag = 0;
-            action = "off";
-            String url = baseUrl + "?value=0";
-//            makeRequest(url);
-//            makeRequest2(models.get(position).getBaseUrl(),  "device", action,  models.get(position).getIddevice());
-        }
-    }
-    
-    private void disconnectSocket() {
-        if(socket.connected()) {
-            socket.disconnect();
-        } else {
-            Toast.makeText(context, "", Toast.LENGTH_SHORT).show();
-        }
+    private void sinkronUpdate() {
+        socket.emit("connection", "")
+                .on("onOffApp", new Emitter.Listener() {
+                    @Override
+                    public void call(Object... args) {
+                        socket.emit("idupdate", idupdate, new Ack() {
+                            @Override
+                            public void call(Object... args) {
+                                Log.e("AdapterResponse", "Response dari adapter : " + args.toString());
+                            }
+                        });
+                    }
+                });
     }
 
-    private void startSocket() {
-        listener = new SocketListener();
-        socket = listener.getSocket();
-        socket.connect();
-        Log.e(TAG, "Socket IO running");
+    private JSONObject getData() {
+        String data = getDefaults("data", context);
+        JSONObject jsonObject = new JSONObject();
+        if(!TextUtils.isEmpty(data)) {
+            try {
+                jsonObject = new JSONObject(data);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+        return jsonObject;
+    }
+
+    private void getIdUpdate() {
+        try {
+            JSONObject jsonObject = getData();
+            idupdate = jsonObject.getString("idupdate");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void enableCardView(final ViewHolder viewHolder) {
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                viewHolder.cardView.setEnabled(true);
+            }
+        }, 500);
     }
 }

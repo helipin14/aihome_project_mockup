@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:id="@+id/parent_container"
+    android:background="#f7f7f7"
     android:layout_height="match_parent">
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,6 +16,7 @@
             android:layout_width="match_parent"
             android:background="@color/colorPrimary"
             android:padding="10dp"
+            android:id="@+id/setting_toolbar"
             android:layout_height="wrap_content">
             <LinearLayout
                 android:layout_width="match_parent"
@@ -36,235 +39,269 @@
                     android:text="SETTINGS"
                     android:textColor="@android:color/white"
                     android:textSize="18sp"
+                    android:fontFamily="@font/valeraround"
                     />
             </LinearLayout>
         </android.support.v7.widget.Toolbar>
         <!-- end toolbar -->
-        <!-- begin layout -->
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:orientation="vertical"
-            android:padding="15dp"
-            android:layout_height="wrap_content">
-            <!-- layout 1 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:id="@+id/container_layout1"
-                android:layout_height="wrap_content">
-                <EditText
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:id="@+id/username_detail"
-                    android:textColor="@color/colorBlack"
-                    />
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="CHANGE"
-                    android:layout_marginTop="20dp"
-                    android:id="@+id/change_username"
-                    android:backgroundTint="@color/colorPrimary"
-                    android:textColor="@android:color/white"
-                    android:gravity="center"
-                    android:visibility="visible"
-                    android:layout_gravity="center"
-                    />
-                <!-- asking password -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:orientation="vertical"
-                    android:id="@+id/container_askpass"
-                    android:visibility="gone"
-                    android:paddingTop="15dp"
-                    android:layout_height="wrap_content">
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_weight="0.5"
-                        android:layout_height="wrap_content"
-                        android:hint="Username baru"
-                        android:id="@+id/username_baru"
-                        android:layout_marginBottom="10dp"
-                        />
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:orientation="horizontal"
-                        android:paddingTop="10dp"
-                        android:layout_height="wrap_content">
-                        <EditText
+       <ScrollView
+           android:layout_width="match_parent"
+           android:fillViewport="true"
+           android:background="#f7f7f7"
+           style="@style/scrollbar_style"
+           android:layout_height="wrap_content">
+           <!-- begin layout -->
+           <LinearLayout
+               android:layout_width="match_parent"
+               android:orientation="vertical"
+               android:background="#f7f7f7"
+               android:layout_height="match_parent">
+               <!-- layout 1 -->
+               <LinearLayout
+                   android:layout_width="match_parent"
+                   android:orientation="vertical"
+                   android:visibility="gone"
+                   android:id="@+id/container_layout1"
+                   android:layout_height="wrap_content">
+                   <!-- layout image profile -->
+                   <LinearLayout
+                       android:layout_width="match_parent"
+                       android:orientation="vertical"
+                       android:paddingTop="20dp"
+                       android:paddingLeft="20dp"
+                       android:paddingRight="20dp"
+                       android:layout_height="match_parent">
+                       <RelativeLayout
+                           android:layout_width="match_parent"
+                           android:orientation="vertical"
+                           android:layout_gravity="center"
+                           android:gravity="center"
+                           android:paddingTop="10dp"
+                           android:layout_height="wrap_content">
+                           <de.hdodenhof.circleimageview.CircleImageView
+                               android:layout_width="wrap_content"
+                               android:layout_height="wrap_content"
+                               android:background="@drawable/user_circle"
+                               android:backgroundTint="@color/colorGrey"
+                               android:layout_marginBottom="20dp"
+                               android:id="@+id/image_profile"
+                               />
+                           <ImageButton
+                               android:layout_width="50dp"
+                               android:layout_height="50dp"
+                               android:padding="12dp"
+                               android:src="@drawable/camera"
+                               android:scaleType="fitCenter"
+                               android:id="@+id/change_profile_picture"
+                               android:background="@drawable/circle"
+                               android:layout_alignBottom="@+id/image_profile"
+                               android:layout_alignRight="@id/image_profile"
+                               />
+                       </RelativeLayout>
+                   </LinearLayout>
+                   <!-- end layout image profile -->
+                   <!-- layout change name -->
+                   <LinearLayout
+                       android:layout_width="match_parent"
+                       android:orientation="vertical"
+                       android:layout_height="wrap_content">
+                       <LinearLayout
+                           android:layout_width="match_parent"
+                           android:orientation="vertical"
+                           android:paddingBottom="10dp"
+                           android:paddingTop="20dp"
+                           android:background="#f7f7f7"
+                           xmlns:app="http://schemas.android.com/apk/res-auto"
+                           android:layout_height="wrap_content">
+                           <android.support.v7.widget.CardView
+                               android:layout_width="match_parent"
+                               app:cardBackgroundColor="@android:color/white"
+                               app:cardElevation="2dp"
+                               app:contentPaddingTop="15dp"
+                               android:id="@+id/open_dialog_change_username"
+                               app:contentPaddingBottom="15dp"
+                               app:contentPaddingLeft="20dp"
+                               android:clickable="true"
+                               android:foreground="?android:selectableItemBackground"
+                               app:contentPaddingRight="20dp"
+                               android:layout_height="wrap_content">
+                               <RelativeLayout
+                                   android:layout_width="match_parent"
+                                   android:layout_height="wrap_content">
+                                   <TextView
+                                       android:layout_width="match_parent"
+                                       android:layout_height="wrap_content"
+                                       android:text="Helipin Zheng"
+                                       android:id="@+id/username_detail"
+                                       android:textSize="17sp"
+                                       android:textColor="#414141"
+                                       android:layout_centerVertical="true"
+                                       />
+                                   <ImageView
+                                       android:layout_width="20dp"
+                                       android:layout_height="20dp"
+                                       android:background="@drawable/pencil2"
+                                       android:layout_centerVertical="true"
+                                       android:backgroundTint="#414141"
+                                       android:layout_alignParentRight="true"
+                                       />
+                               </RelativeLayout>
+                           </android.support.v7.widget.CardView>
+                       </LinearLayout>
+                   </LinearLayout>
+                   <!-- end layout change name  -->
+                   <!-- layout change password -->
+                   <LinearLayout
+                       android:layout_width="match_parent"
+                       android:layout_height="wrap_content"
+                       android:layout_marginTop="15dp"
+                       xmlns:app="http://schemas.android.com/apk/res-auto"
+                       android:orientation="vertical">
+                       <TextView
+                           android:layout_width="match_parent"
+                           android:paddingLeft="10dp"
+                           android:paddingBottom="15dp"
+                           android:layout_height="wrap_content"
+                           android:text="Password"
+                           android:textSize="15sp"
+                           android:textColor="@color/colorBlue"
+                           android:textAllCaps="true"
+                           />
+                       <android.support.v7.widget.CardView
+                           android:layout_width="match_parent"
+                           app:cardBackgroundColor="@android:color/white"
+                           app:cardElevation="2dp"
+                           android:id="@+id/change_password"
+                           app:contentPaddingTop="15dp"
+                           app:contentPaddingBottom="15dp"
+                           app:contentPaddingLeft="20dp"
+                           app:contentPaddingRight="20dp"
+                           android:clickable="true"
+                           android:foreground="?android:selectableItemBackground"
+                           android:layout_height="wrap_content">
+                           <RelativeLayout
+                               android:layout_width="match_parent"
+                               android:layout_height="wrap_content">
+                               <TextView
+                                   android:layout_width="wrap_content"
+                                   android:layout_height="wrap_content"
+                                   android:text="Change password"
+                                   android:textSize="17sp"
+                                   android:textColor="#414141"
+                                   />
+                               <ImageView
+                                   android:layout_width="25dp"
+                                   android:layout_alignParentRight="true"
+                                   android:layout_height="25dp"
+                                   android:background="@drawable/arrow_right"
+                                   android:backgroundTint="#414141"
+                                   />
+                           </RelativeLayout>
+                       </android.support.v7.widget.CardView>
+                   </LinearLayout>
+                   <!-- end layout change password -->
+               </LinearLayout>
+               <!-- end layout 1 -->
+               <!-- layout 2 -->
+               <LinearLayout
+                   android:layout_width="match_parent"
+                   android:orientation="vertical"
+                   android:id="@+id/container_layout2"
+                   android:visibility="visible"
+                   android:layout_height="match_parent">
+                   <!-- theme color -->
+                   <LinearLayout
+                       android:layout_width="match_parent"
+                       android:orientation="vertical"
+                       android:paddingLeft="20dp"
+                       android:paddingTop="20dp"
+                       android:paddingBottom="10dp"
+                       android:paddingRight="20dp"
+                       android:layout_height="wrap_content">
+                        <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_weight="0.5"
-                            android:layout_height="wrap_content"
-                            android:hint="Password"
-                            android:id="@+id/askpass"
-                            android:layout_marginBottom="10dp"
-                            android:inputType="textPassword"
-                            />
-                        <ImageButton
-                            android:layout_width="45dp"
-                            android:layout_height="45dp"
-                            android:src="@drawable/eye"
-                            android:scaleType="fitXY"
-                            android:id="@+id/showpass"
-                            />
-                    </LinearLayout>
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:orientation="horizontal"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        android:layout_marginTop="20dp"
-                        android:layout_height="wrap_content">
-                        <Button
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="SAVE"
-                            android:background="@color/colorPrimary"
-                            android:textColor="@android:color/white"
-                            android:gravity="center"
-                            android:id="@+id/save_username"
-                            android:layout_gravity="center"
-                            android:layout_marginRight="10dp"
-                            />
-                        <Button
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="CANCEL"
-                            android:id="@+id/cancel_username"
-                            android:background="@color/colorRed"
-                            android:textColor="@android:color/white"
-                            android:gravity="center"
-                            android:layout_gravity="center"
-                            />
-                    </LinearLayout>
-                </LinearLayout>
-                <!-- end asking password -->
-            </LinearLayout>
-            <!-- end layout 1 -->
-            <!-- layout 2 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:id="@+id/container_layout2"
-                android:orientation="vertical"
-                android:layout_height="wrap_content">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:orientation="vertical"
-                    android:layout_height="wrap_content">
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_weight="0.5"
-                        android:layout_height="wrap_content"
-                        android:hint="Password Anda"
-                        android:inputType="textPassword"
-                        android:layout_marginBottom="5dp"
-                        android:id="@+id/passwordlama"
-                        />
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Password baru"
-                        android:id="@+id/passwordbaru"
-                        android:layout_marginBottom="5dp"
-                        />
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:hint="Konfirmasi password baru"
-                        android:id="@+id/konfirmasi_passbaru"
-                        />
-                    <CheckBox
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Show password"
-                        android:layout_marginTop="10dp"
-                        android:id="@+id/showpass2"
-                        />
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="SAVE"
-                        android:id="@+id/save_passbaru"
-                        android:textColor="@android:color/white"
-                        android:background="@color/colorPrimary"
-                        android:layout_gravity="center"
-                        android:layout_marginTop="15dp"
-                        />
-                </LinearLayout>
-            </LinearLayout>
-            <!-- end layout 2 -->
-            <!-- layout 3 -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:orientation="vertical"
-                android:paddingTop="20dp"
-                android:visibility="gone"
-                android:id="@+id/container_kwh_settings"
-                android:layout_height="wrap_content">
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content">
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Rp. "
-                        android:textSize="18sp"
-                        android:layout_gravity="center"
-                        android:gravity="center"
-                        />
-                    <EditText
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:id="@+id/total_biaya_edittext"
-                        android:hint="Total biaya"
-                        android:inputType="number"
-                        android:enabled="false"
-                        android:defaultFocusHighlightEnabled="false"
-                        />
-                </LinearLayout>
-                <Button
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center"
-                    android:paddingTop="10dp"
-                    android:backgroundTint="@color/colorPrimary"
-                    android:text="CHANGE"
-                    android:id="@+id/showchangekwh"
-                    android:textColor="@android:color/white"
-                    />
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:orientation="horizontal"
-                    android:paddingTop="10dp"
-                    android:visibility="gone"
-                    android:layout_gravity="center"
-                    android:gravity="center"
-                    android:id="@+id/container_change_kwh_button"
-                    android:layout_height="wrap_content">
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:paddingTop="10dp"
-                        android:backgroundTint="@color/colorPrimary"
-                        android:text="SET"
-                        android:id="@+id/change_kwh_price"
-                        android:textColor="@android:color/white"
-                        />
-                    <Button
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center"
-                        android:paddingTop="10dp"
-                        android:backgroundTint="@color/colorRed"
-                        android:text="CANCEL"
-                        android:id="@+id/cancel_kwh"
-                        android:textColor="@android:color/white"
-                        />
-                </LinearLayout>
-            </LinearLayout>
-            <!-- end layout 3 -->
-        </LinearLayout>
-        <!-- end begin layout -->
+                            android:orientation="vertical"
+                            android:layout_height="wrap_content">
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:text="theme color"
+                                android:textAllCaps="true"
+                                android:textSize="15sp"
+                                android:fontFamily="@font/hind_regular"
+                                android:textColor="@color/colorGrey"
+                                />
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:paddingTop="15dp"
+                                android:layout_height="wrap_content">
+                                <android.support.v7.widget.CardView
+                                    android:layout_width="match_parent"
+                                    app:cardBackgroundColor="@android:color/white"
+                                    app:cardElevation="3dp"
+                                    app:contentPadding="20dp"
+                                    android:layout_height="wrap_content">
+                                    <android.support.v7.widget.RecyclerView
+                                        android:layout_width="match_parent"
+                                        android:id="@+id/color_list"
+                                        app:fastScrollEnabled="false"
+                                        android:layout_height="wrap_content">
+                                    </android.support.v7.widget.RecyclerView>
+                                </android.support.v7.widget.CardView>
+                            </LinearLayout>
+                        </LinearLayout>
+                   </LinearLayout>
+                   <!-- end theme color -->
+                   <!-- time zone -->
+                   <LinearLayout
+                       android:layout_width="match_parent"
+                       android:orientation="vertical"
+                       android:paddingLeft="20dp"
+                       android:paddingTop="20dp"
+                       android:paddingRight="20dp"
+                       android:layout_height="wrap_content">
+                       <TextView
+                           android:layout_width="match_parent"
+                           android:layout_height="wrap_content"
+                           android:text="CHANGE TIME ZONE"
+                           android:fontFamily="@font/hind_regular"
+                           android:textSize="15sp"
+                           />
+                       <android.support.v7.widget.CardView
+                           android:layout_width="match_parent"
+                           app:contentPadding="15dp"
+                           android:layout_marginTop="15dp"
+                           app:cardElevation="0dp"
+                           android:layout_height="wrap_content">
+                           <com.toptoche.searchablespinnerlibrary.SearchableSpinner
+                               android:layout_width="match_parent"
+                               android:id="@+id/timezone"
+                               android:layout_height="wrap_content">
+                           </com.toptoche.searchablespinnerlibrary.SearchableSpinner>
+                       </android.support.v7.widget.CardView>
+                   </LinearLayout>
+                   <!-- end time zone -->
+                   <LinearLayout
+                       android:layout_width="match_parent"
+                       android:paddingLeft="15dp"
+                       android:paddingRight="15dp"
+                       android:paddingBottom="20dp"
+                       android:paddingTop="30dp"
+                       android:layout_height="wrap_content">
+                       <Button
+                           android:layout_width="match_parent"
+                           android:layout_height="wrap_content"
+                           android:text="SAVE"
+                           android:textSize="17sp"
+                           android:id="@+id/save_config_host"
+                           android:backgroundTint="@color/colorPrimary"
+                           android:textColor="@android:color/white"
+                           />
+                   </LinearLayout>
+               </LinearLayout>
+               <!-- end layout 2 -->
+           </LinearLayout>
+           <!-- end begin layout -->
+       </ScrollView>
     </LinearLayout>
 </LinearLayout>

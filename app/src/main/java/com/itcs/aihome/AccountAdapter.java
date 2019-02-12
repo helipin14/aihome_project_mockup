@@ -29,7 +29,7 @@ public class AccountAdapter extends BaseAdapter {
 
     private static class ViewHolder {
         TextView textView;
-        ImageView imageView;
+        SolidIconTextView imageView;
     }
 
     @Override
@@ -56,9 +56,8 @@ public class AccountAdapter extends BaseAdapter {
             view = inflater.inflate(R.layout.accountitem, viewGroup, false);
             viewHolder.textView = view.findViewById(R.id.text_account);
             viewHolder.imageView = view.findViewById(R.id.image_account);
-
             viewHolder.textView.setText(items.get(i));
-            viewHolder.imageView.setBackgroundResource(image.get(i));
+            viewHolder.imageView.setText(image.get(i));
         }
         return view;
     }

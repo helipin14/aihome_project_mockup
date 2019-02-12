@@ -12,6 +12,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,16 +29,14 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class CCTVFragment extends Fragment {
 
-    private Button button;
-    private VideoView videoView;
-    private Switch aSwitch;
-    private ProgressBar progressBar;
-    private Uri videoUri;
-    private Snackbar snackbar;
-    private ImageView imageView;
+    private RecyclerView recyclerView;
+    private List<CCTVData> data;
+    private CCTVAdapter adapter;
 
     public static CCTVFragment newInstance() {
         CCTVFragment cctvFragment = new CCTVFragment();
@@ -48,74 +48,31 @@ public class CCTVFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.cctv, container, false);
         init(view);
-        switchVideoStart(videoView, view);
+        setupCCTV();
         return view;
     }
 
-    private void switchVideoStart(final VideoView videoView, final View view) {
-        aSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton compoundButton, boolean b) {
-                if(b) {
-                    videoHandler(videoView, view);
-                    videoView.setVisibility(View.VISIBLE);
-                    videoView.setBackgroundResource(0);
-                    imageView.setVisibility(View.GONE);
-                } else {
-                    videoView.stopPlayback();
-                    progressBar.setVisibility(View.GONE);
-                    videoView.setBackgroundResource(R.color.colorGrey);
-                    imageView.setVisibility(View.VISIBLE);
-                }
-            }
-        });
-    }
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
 
-    private void videoHandler(final VideoView videoView, final View view) {
-        videoUri = Uri.parse("rtsp://184.72.239.149/vod/mp4:BigBuckBunny_175k.mov");
-        videoView.setVideoURI(videoUri);
-        videoView.start();
-        videoView.requestFocus();
-        videoView.setKeepScreenOn(true);
-        progressBar.setVisibility(View.VISIBLE);
-        videoView.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-            @Override
-            public void onPrepared(MediaPlayer mediaPlayer) {
-              mediaPlayer.start();
-              mediaPlayer.setOnVideoSizeChangedListener(new MediaPlayer.OnVideoSizeChangedListener() {
-                  @Override
-                  public void onVideoSizeChanged(MediaPlayer mediaPlayer, int i, int i1) {
-                      progressBar.setVisibility(View.GONE);
-                      mediaPlayer.start();
-                  }
-              });
-            }
-        });
-
-        videoView.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-            @Override
-            public void onCompletion(MediaPlayer mediaPlayer) {
-                imageView.setVisibility(View.VISIBLE);
-            }
-        });
-
-        videoView.setOnErrorListener(new MediaPlayer.OnErrorListener() {
-            @Override
-            public boolean onError(MediaPlayer mediaPlayer, int i, int i1) {
-                Log.d("API123", "What " + i + " extra " + i1);
-                snackbar = Snackbar.make(view.findViewById(R.id.container_cctv), "There was an error while playing video", Snackbar.LENGTH_LONG);
-                View snackbarView = snackbar.getView();
-                snackbarView.setBackgroundResource(R.color.colorRed);
-                snackbar.show();
-                return false;
-            }
-        });
+        super.onSaveInstanceState(outState);
     }
 
     private void init(View view) {
-        imageView = view.findViewById(R.id.image_thumbnail);
-        progressBar = view.findViewById(R.id.progress_video);
-        videoView = view.findViewById(R.id.videoview);
-        aSwitch = view.findViewById(R.id.playcontroller);
+        recyclerView = view.findViewById(R.id.cctv_list);
     }
+
+    private void setupCCTV() {
+        loadData();
+        adapter = new CCTVAdapter(getContext(), data);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        recyclerView.setAdapter(adapter);
+    }
+
+    private void loadData() {
+        data = new ArrayList<>();
+        data.add(new CCTVData("rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov", "1", "CCTV 1"));
+        data.add(new CCTVData("rtsp://184.72.239.149/vod/mp4:BigBuckBunny_115k.mov", "2", "CCTV 2"));
+    }
+
 }

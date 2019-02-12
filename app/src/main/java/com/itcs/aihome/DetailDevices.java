@@ -52,62 +52,75 @@ public class DetailDevices extends AppCompatActivity {
 
     private void getData() {
         Intent intent = getIntent();
-        String tipe = intent.getStringExtra("tipe");
-        setData(tipe);
+        String tipe = intent.getStringExtra("type");
+//        setData(tipe);
     }
 
-    private void setData(String tipe) {
-        try {
-            JSONObject jsonObject = new JSONObject(data);
-            JSONArray jsonArray = jsonObject.getJSONArray("controller");
-            models = new ArrayList<>();
-            for(int i = 0; i < jsonArray.length(); i++) {
-                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
-                String blynk_key = jsonObject1.getString("blynk_key");
-                if(jsonObject1.isNull("device")) {
-                } else {
-                    JSONArray devices = jsonObject1.getJSONArray("device");
-                    for(int x = 0; x < devices.length(); x++) {
-                        String status = "";
-                        String device_name = "";
-                        String baseUrl = "";
-                        String iddevice = "";
-                        String blynkurl = "";
-                        String tag = "";
-                        String pin = "";
-                        int image = 0;
-                        final JSONObject jsonObject2 = devices.getJSONObject(x);
-                        String type = jsonObject2.getString("type");
-                        if(tipe.equals("light") && type.equals("light")) {
-                            pin = jsonObject2.getString("pin");
-                            device_name = jsonObject2.getString("device_name");
-                            baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
-                            iddevice = jsonObject2.getString("iddevice");
-                            status = jsonObject2.getString("status");
-                            blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                            tag = "light";
-                            image = R.drawable.bulb;
-                            models.add(new Model(image, status, device_name, baseUrl, tag, iddevice, blynkurl, pin));
-                        } else if(tipe.equals("ac") && type.equals("ac")){
-                            pin = jsonObject2.getString("pin");
-                            device_name = jsonObject2.getString("device_name");
-                            baseUrl = "http://dataaihome.itcs.co.id/deviceTrigger.php";
-                            iddevice = jsonObject2.getString("iddevice");
-                            status = jsonObject2.getString("status");
-                            blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
-                            tag = "AC";
-                            image = R.drawable.ac;
-                            models.add(new Model(image, status, device_name, baseUrl, tag, iddevice, blynkurl, pin));
-                        }
-                    }
-                }
-            }
-            adapter = new GridViewAdapter(getApplicationContext(), models);
-            gridView.setAdapter(adapter);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-    }
+//    private void setData(String tipe) {
+//        try {
+//            JSONObject jsonObject = new JSONObject(data);
+//            JSONArray jsonArray = jsonObject.getJSONArray("controller");
+//            models = new ArrayList<>();
+//            for(int i = 0; i < jsonArray.length(); i++) {
+//                JSONObject jsonObject1 = jsonArray.getJSONObject(i);
+//                String blynk_key = jsonObject1.getString("blynk_key");
+//                if(jsonObject1.isNull("device")) {
+//                } else {
+//                    JSONArray devices = jsonObject1.getJSONArray("device");
+//                    for(int x = 0; x < devices.length(); x++) {
+//                        String status = "";
+//                        String device_name = "";
+//                        String baseUrl = "";
+//                        String iddevice = "";
+//                        String blynkurl = "";
+//                        String tag = "";
+//                        String pin = "";
+//                        int image = 0;
+//                        final JSONObject jsonObject2 = devices.getJSONObject(x);
+//                        String type = jsonObject2.getString("type");
+//                        if(tipe.equals("light") && type.equals("light")) {
+//                            pin = jsonObject2.getString("pin");
+//                            device_name = jsonObject2.getString("device_name");
+//                            baseUrl = "http://dataaihome2.itcs.co.id/deviceTrigger.php";
+//                            iddevice = jsonObject2.getString("iddevice");
+//                            status = jsonObject2.getString("status");
+//                            int flag = 0;
+//                            if(status.equals("on")) {
+//                                flag = 1;
+//                            } else {
+//                                flag = 0;
+//                            }
+//                            blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
+//                            tag = "light";
+//                            image = R.drawable.bulb;
+//                            models.add(new Model(image, status, device_name, baseUrl, tag, iddevice, blynkurl, pin, flag));
+//                        } else if(tipe.equals("ac") && type.equals("ac")){
+//                            pin = jsonObject2.getString("pin");
+//                            device_name = jsonObject2.getString("device_name");
+//                            baseUrl = "http://dataaihome2.itcs.co.id/deviceTrigger.php";
+//                            iddevice = jsonObject2.getString("iddevice");
+//                            status = jsonObject2.getString("status");
+//                            int flag = 0;
+//                            if(status.equals("on")) {
+//                                flag = 1;
+//                            } else {
+//                                flag = 0;
+//                            }
+//                            blynkurl = "http://188.166.206.43:8080/" + blynk_key + "/update/" + pin;
+//                            tag = "AC";
+//                            image = R.drawable.ac;
+//                            models.add(new Model(image, status, device_name, baseUrl, tag, iddevice, blynkurl, pin, flag));
+//                        }
+//                    }
+//                }
+//            }
+//            adapter = new GridViewAdapter(getApplicationContext(), models);
+//            gridView.setAdapter(adapter);
+//            gridView.setExpanded(true);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
+//    }
 
     public static String getDefaults(String key, Context context) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
