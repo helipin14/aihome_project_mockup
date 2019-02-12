@@ -37,6 +37,7 @@ public class CCTVFragment extends Fragment {
     private RecyclerView recyclerView;
     private List<CCTVData> data;
     private CCTVAdapter adapter;
+    private Button button;
 
     public static CCTVFragment newInstance() {
         CCTVFragment cctvFragment = new CCTVFragment();
@@ -60,6 +61,14 @@ public class CCTVFragment extends Fragment {
 
     private void init(View view) {
         recyclerView = view.findViewById(R.id.cctv_list);
+        button = view.findViewById(R.id.coba);
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent intent = new Intent(getContext(), VideoPlayerActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void setupCCTV() {

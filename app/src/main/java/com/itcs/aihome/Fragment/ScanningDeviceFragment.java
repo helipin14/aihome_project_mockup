@@ -87,10 +87,4 @@ public class ScanningDeviceFragment extends Fragment {
             ActivityCompat.requestPermissions(getActivity(),  new String[] {Manifest.permission.ACCESS_WIFI_STATE}, 1);
         }
     }
-
-    @Override
-    public void onPause() {
-        super.onPause();
-        unregisterForContextMenu();
-    }
 }

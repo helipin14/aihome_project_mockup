@@ -25,6 +25,12 @@
         android:paddingRight="10dp"
         android:paddingTop="20dp"
         android:layout_height="wrap_content">
+        <Button
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Coba"
+            android:id="@+id/coba"
+            />
         <android.support.v7.widget.RecyclerView
             android:layout_width="match_parent"
             android:id="@+id/cctv_list"

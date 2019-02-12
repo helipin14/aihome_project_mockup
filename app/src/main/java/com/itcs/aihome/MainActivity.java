@@ -127,7 +127,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             protected Map<String, String> getParams() {
                 Map<String, String> params = new HashMap<String, String>();
-                params.put("username", username);
+                params.put("email", username);
                 params.put("password", password);
                 return params;
             }

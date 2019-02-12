@@ -188,7 +188,7 @@ public class HomeFragment extends Fragment {
 //        ac();
         noData();
         setupGroup();
-        showElemOnOff();
+//        showElemOnOff();
         themeSettings();
         return view;
     }
@@ -401,16 +401,16 @@ public class HomeFragment extends Fragment {
 //        }
 //    }
 
-    private void showElemOnOff() {
-        if(models.size() > 1) {
-            light.setVisibility(View.VISIBLE);
-        } else if(models2.size() > 1) {
-            ac.setVisibility(View.VISIBLE);
-        } else {
-            light.setVisibility(View.GONE);
-            ac.setVisibility(View.GONE);
-        }
-    }
+//    private void showElemOnOff() {
+//        if(models.size() > 1) {
+//            light.setVisibility(View.VISIBLE);
+//        } else if(models2.size() > 1) {
+//            ac.setVisibility(View.VISIBLE);
+//        } else {
+//            light.setVisibility(View.GONE);
+//            ac.setVisibility(View.GONE);
+//        }
+//    }
 
     private String getStatus(String iddevice) {
         String status = "";
