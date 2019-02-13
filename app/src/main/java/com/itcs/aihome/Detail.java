@@ -92,7 +92,7 @@ public class Detail extends AppCompatActivity {
     private ImageView imageView;
     private ArrayList<Integer> time_start, time_end;
     private CheckBox everyday;
-    private String id_device, iduser, pin, device, status, type, idtimer, idtimer_save;
+    private String id_device, iduser, pin, device, status, type, idtimer, idtimer_save, idhouse;
     private LinearLayout container_time;
     private Switch time_control;
     private LinearLayout container1, container2, container3, container_configuration;
@@ -132,6 +132,7 @@ public class Detail extends AppCompatActivity {
         change = findViewById(R.id.change_timer);
         parent = findViewById(R.id.container_detail);
         devices.setText("");
+        idhouse = getIdHouse();
 
         getDataUser();
 
@@ -844,18 +845,22 @@ public class Detail extends AppCompatActivity {
                     String data = getDefaults("data", getApplicationContext());
                     if(!TextUtils.isEmpty(data)) {
                         JSONObject jsonObject = new JSONObject(data);
-                        JSONObject jsonObject1 = new JSONObject();
-                        jsonObject1.put("device_name", device);
-                        jsonObject1.put("iddevice", id_device);
-                        jsonObject1.put("type", type);
-                        jsonObject1.put("pin", pin);
-                        if(!jsonObject.isNull("favorite")) {
-                            JSONArray jsonArray = jsonObject.getJSONArray("favorite");
-                            jsonArray.put(jsonObject1);
-                        } else {
-                            JSONArray jsonArray = new JSONArray();
-                            jsonArray.put(jsonObject1);
-                            jsonObject.put("favorite", jsonArray);
+                        JSONArray house = jsonObject.getJSONArray("house");
+                        for (int i = 0; i < house.length(); i++) {
+                            JSONObject jsonObject1 = house.getJSONObject(i);
+                            if(!jsonObject1.isNull("controller")) {
+                                JSONArray controller = jsonObject1.getJSONArray("controller");
+                                for(int x = 0; x < controller.length(); x++) {
+                                    JSONObject jsonObject2 = controller.getJSONObject(x);
+                                    if(!jsonObject2.isNull("appliances")) {
+                                        JSONArray appliances = jsonObject2.getJSONArray("appliances");
+                                        for(int j = 0; j < appliances.length(); j++) {
+                                            JSONObject jsonObject3 = appliances.getJSONObject(j);
+
+                                        }
+                                    }
+                                }
+                            }
                         }
                         setDefaults("data", jsonObject.toString(), getApplicationContext());
                         Log.e(TAG, "Setelah aku tambah favorite : " + jsonObject.toString());
@@ -874,6 +879,8 @@ public class Detail extends AppCompatActivity {
             protected Map<String, String> getParams() throws AuthFailureError {
                 Map<String, String> params = new HashMap<String, String>();
                 params.put("iddevice", id_device);
+                params.put("idhouse", idhouse);
+                params.put("iduser", iduser);
                 return params;
             }
 
@@ -1263,5 +1270,23 @@ public class Detail extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    private String getIdHouse() {
+        String idhouse = "";
+        if(getDefaults("data", getApplicationContext()) != null) {
+            String data = getDefaults("data", getApplicationContext());
+            try {
+                JSONObject jsonObject = new JSONObject(data);
+                JSONArray house = jsonObject.getJSONArray("house");
+                for (int i = 0; i < house.length(); i++) {
+                    JSONObject jsonObject1 = house.getJSONObject(i);
+                    idhouse = jsonObject1.getString("idhouse");
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+         }
+         return idhouse;
     }
 }
