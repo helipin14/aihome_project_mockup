@@ -20,6 +20,7 @@ import me.dm7.barcodescanner.zxing.ZXingScannerView;
 public class QRCodeScanning extends Fragment implements ZXingScannerView.ResultHandler {
 
     private ZXingScannerView scannerView;
+    private static final int CAMERA_REQUEST_CODE = 100;
 
     @Nullable
     @Override
@@ -37,13 +38,17 @@ public class QRCodeScanning extends Fragment implements ZXingScannerView.ResultH
 
     private void startScanning() {
         if(!permitted()) {
-            scannerView.setResultHandler(this);
-            scannerView.setAutoFocus(true);
-            scannerView.requestFocus();
-            scannerView.startCamera();
+            setupCamera();
         } else {
             requestPermission();
         }
+    }
+
+    private void setupCamera() {
+        scannerView.setResultHandler(this);
+        scannerView.setAutoFocus(true);
+        scannerView.requestFocus();
+        scannerView.startCamera();
     }
 
     @Override
@@ -62,5 +67,14 @@ public class QRCodeScanning extends Fragment implements ZXingScannerView.ResultH
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case CAMERA_REQUEST_CODE:
+                setupCamera();
+                break;
+        }
     }
 }

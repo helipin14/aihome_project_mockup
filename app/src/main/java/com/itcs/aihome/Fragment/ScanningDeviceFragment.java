@@ -20,6 +20,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import com.itcs.aihome.R;
 import com.itcs.aihome.WiFiAdapter;
@@ -37,6 +38,7 @@ public class ScanningDeviceFragment extends Fragment {
     private WifiManager manager;
     private String TAG = this.getClass().getSimpleName();
     private SwipeRefreshLayout swipeRefreshLayout;
+    private BroadcastReceiver wifiReceiver;
 
     @Nullable
     @Override
@@ -48,7 +50,7 @@ public class ScanningDeviceFragment extends Fragment {
         return view;
     }
 
-    private void init(View view) {
+    private void init(View view) throws NullPointerException {
         manager = (WifiManager) getActivity().getApplicationContext().getSystemService(Context.WIFI_SERVICE);
         wifiList = view.findViewById(R.id.listwifi);
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
@@ -59,21 +61,25 @@ public class ScanningDeviceFragment extends Fragment {
         if(!manager.isWifiEnabled()) {
             requestPermission();
         }
-        manager.startScan();
-        getActivity().registerReceiver(new BroadcastReceiver() {
+        wifiReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                boolean success = intent.getBooleanExtra(WifiManager.EXTRA_RESULTS_UPDATED, false);
-                if(success) {
-                    scanResults = manager.getScanResults();
-                    if(scanResults.size() > 0) {
-                        for (int i = 0; i < scanResults.size(); i++) {
-                            networks.add(scanResults.get(i).SSID);
-                        }
+                scanResults = manager.getScanResults();
+                Log.e(TAG, "onReceive: " + manager.getScanResults().toString());
+                getActivity().getApplicationContext().unregisterReceiver(this);
+                if(scanResults.size() > 0) {
+                    for (int i = 0; i < scanResults.size(); i++) {
+                        networks.add(scanResults.get(i).SSID);
                     }
                 }
             }
-        }, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        };
+        try {
+            getActivity().registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        manager.startScan();
         if(networks.size() > 0) {
             adapter = new WiFiAdapter(getContext(), networks);
             wifiList.setLayoutManager(new LinearLayoutManager(getContext()));
