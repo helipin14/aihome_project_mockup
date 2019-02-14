@@ -56,26 +56,31 @@ public class ScanningDeviceFragment extends Fragment {
         swipeRefreshLayout = view.findViewById(R.id.swipe_refresh);
     }
 
-    private void setupWiFiList() throws NullPointerException {
+    private void setupWiFiList() {
         networks = new ArrayList<>();
         if(!manager.isWifiEnabled()) {
             requestPermission();
         }
-        wifiReceiver = new BroadcastReceiver() {
-            @Override
-            public void onReceive(Context context, Intent intent) {
-                scanResults = manager.getScanResults();
-                Log.e(TAG, "onReceive: " + manager.getScanResults().toString());
-                getActivity().getApplicationContext().unregisterReceiver(this);
-                if(scanResults.size() > 0) {
-                    for (int i = 0; i < scanResults.size(); i++) {
-                        networks.add(scanResults.get(i).SSID);
+        try {
+            wifiReceiver = new BroadcastReceiver() {
+                @Override
+                public void onReceive(Context context, Intent intent) {
+                    scanResults = manager.getScanResults();
+                    Toast.makeText(context, "Scanning....", Toast.LENGTH_LONG).show();
+                    Log.e(TAG, "onReceive: " + manager.getScanResults().toString());
+                    if(scanResults.size() > 0) {
+                        for (int i = 0; i < scanResults.size(); i++) {
+                            networks.add(scanResults.get(i).SSID);
+                        }
                     }
                 }
+            };
+            getActivity().getApplicationContext().registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
+            if(scanResults != null) {
+                if(scanResults.size() > 0) {
+                    getActivity().getApplicationContext().unregisterReceiver(wifiReceiver);
+                }
             }
-        };
-        try {
-            getActivity().registerReceiver(wifiReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         } catch (Exception e) {
             e.printStackTrace();
         }
